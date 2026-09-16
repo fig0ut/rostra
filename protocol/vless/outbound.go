@@ -48,7 +48,7 @@ type Outbound struct {
 }
 
 func NewOutbound(ctx context.Context, router adapter.Router, logger log.ContextLogger, tag string, options option.VLESSOutboundOptions) (adapter.Outbound, error) {
-	outboundDialer, err := dialer.New(ctx, options.DialerOptions, options.ServerIsDomain())
+	outboundDialer, err := dialer.New(ctx, options.DialerOptions, options.ServerIsDomain() || options.Transport.RequiresDomainResolver())
 	if err != nil {
 		return nil, err
 	}
