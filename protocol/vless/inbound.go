@@ -11,6 +11,7 @@ import (
 	"github.com/sagernet/sing-box/common/mux"
 	"github.com/sagernet/sing-box/common/tls"
 	"github.com/sagernet/sing-box/common/uot"
+	"github.com/sagernet/sing-box/common/vlessencryption"
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
@@ -43,18 +44,26 @@ type Inbound struct {
 	service    *vless.Service[int]
 	tlsConfig  tls.ServerConfig
 	transport  adapter.V2RayServerTransport
+	decryption *vlessencryption.Server
 	references []string
 }
 
 func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLogger, tag string, options option.VLESSInboundOptions) (adapter.Inbound, error) {
-	inbound := &Inbound{
-		Adapter: inbound.NewAdapter(C.TypeVLESS, tag),
-		ctx:     ctx,
-		router:  uot.NewRouter(router, logger),
-		logger:  logger,
-		users:   options.Users,
+	decryption, err := vlessencryption.NewServer(options.Decryption)
+	if err != nil {
+		return nil, err
 	}
-	var err error
+	if decryption != nil && common.Any(options.Users, func(user option.VLESSUser) bool { return user.Flow != "" }) {
+		return nil, E.New("VLESS encryption: flow must be empty; Vision is not implemented")
+	}
+	inbound := &Inbound{
+		Adapter:    inbound.NewAdapter(C.TypeVLESS, tag),
+		ctx:        ctx,
+		router:     uot.NewRouter(router, logger),
+		logger:     logger,
+		users:      options.Users,
+		decryption: decryption,
+	}
 	inbound.router, err = mux.NewRouterWithOptions(inbound.router, logger, common.PtrValueOrDefault(options.Multiplex))
 	if err != nil {
 		return nil, err
@@ -73,7 +82,7 @@ func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLo
 			Context: ctx,
 			Logger:  logger,
 			Options: common.PtrValueOrDefault(options.TLS),
-			KTLSCompatible: common.PtrValueOrDefault(options.Transport).Type == "" &&
+			KTLSCompatible: decryption == nil && common.PtrValueOrDefault(options.Transport).Type == "" &&
 				!common.PtrValueOrDefault(options.Multiplex).Enabled &&
 				common.All(options.Users, func(it option.VLESSUser) bool {
 					return it.Flow == ""
@@ -150,6 +159,16 @@ func (h *Inbound) Start(stage adapter.StartStage, scope *adapter.Scope) error {
 	return nil
 }
 
+func (h *Inbound) Close() error {
+	return common.Close(
+		h.decryption,
+		h.service,
+		h.listener,
+		h.tlsConfig,
+		h.transport,
+	)
+}
+
 func (h *Inbound) NewConnection(ctx context.Context, conn net.Conn, metadata adapter.InboundContext, onClose N.CloseHandlerFunc) {
 	if h.tlsConfig != nil && h.transport == nil {
 		tlsConn, err := tls.ServerHandshake(ctx, conn, h.tlsConfig)
@@ -159,6 +178,15 @@ func (h *Inbound) NewConnection(ctx context.Context, conn net.Conn, metadata ada
 			return
 		}
 		conn = tlsConn
+	}
+	if h.decryption != nil {
+		decrypted, err := h.decryption.Handshake(ctx, conn)
+		if err != nil {
+			N.CloseOnHandshakeFailure(conn, onClose, err)
+			h.logger.ErrorContext(ctx, E.Cause(err, "process connection from ", metadata.Source, ": VLESS encryption handshake"))
+			return
+		}
+		conn = decrypted
 	}
 	err := h.service.NewConnection(adapter.WithContext(ctx, &metadata), conn, metadata.Source, onClose)
 	if err != nil {
