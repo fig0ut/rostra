@@ -18146,6 +18146,388 @@
           "type": "object",
           "properties": {
             "type": {
+              "const": "xhttp"
+            },
+            "host": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "packet-up",
+                "stream-up",
+                "stream-one"
+              ]
+            },
+            "http_version": {
+              "type": "string",
+              "enum": [
+                "1.1",
+                "2",
+                "3"
+              ]
+            },
+            "headers": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "x_padding_bytes": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+-[0-9]+$"
+                }
+              ]
+            },
+            "x_padding_obfs_mode": {
+              "type": "boolean"
+            },
+            "x_padding_method": {
+              "type": "string",
+              "enum": [
+                "repeat-x",
+                "tokenish"
+              ]
+            },
+            "x_padding_placement": {
+              "type": "string",
+              "enum": [
+                "queryInHeader",
+                "header",
+                "cookie",
+                "query"
+              ]
+            },
+            "x_padding_key": {
+              "type": "string"
+            },
+            "x_padding_header": {
+              "type": "string"
+            },
+            "session_id_placement": {
+              "type": "string",
+              "enum": [
+                "path",
+                "query",
+                "header",
+                "cookie"
+              ]
+            },
+            "session_id_key": {
+              "type": "string"
+            },
+            "session_id_table": {
+              "type": "string"
+            },
+            "session_id_length": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+-[0-9]+$"
+                }
+              ]
+            },
+            "seq_placement": {
+              "type": "string",
+              "enum": [
+                "path",
+                "query",
+                "header",
+                "cookie"
+              ]
+            },
+            "seq_key": {
+              "type": "string"
+            },
+            "uplink_http_method": {
+              "type": "string"
+            },
+            "uplink_data_placement": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "body",
+                "header",
+                "cookie"
+              ]
+            },
+            "uplink_data_key": {
+              "type": "string"
+            },
+            "uplink_chunk_size": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+-[0-9]+$"
+                }
+              ]
+            },
+            "server_max_header_bytes": {
+              "type": "integer"
+            },
+            "download_settings": {
+              "$ref": "#/$defs/V2RayXHTTPDownloadOptions"
+            },
+            "sc_max_buffered_posts": {
+              "type": "integer"
+            },
+            "no_sse_header": {
+              "type": "boolean"
+            },
+            "no_grpc_header": {
+              "type": "boolean"
+            },
+            "sc_max_each_post_bytes": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+-[0-9]+$"
+                }
+              ]
+            },
+            "sc_min_posts_interval_ms": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+-[0-9]+$"
+                }
+              ]
+            },
+            "xmux": {
+              "$ref": "#/$defs/V2RayXHTTPXMuxOptions"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "splithttp"
+            },
+            "host": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "packet-up",
+                "stream-up",
+                "stream-one"
+              ]
+            },
+            "http_version": {
+              "type": "string",
+              "enum": [
+                "1.1",
+                "2",
+                "3"
+              ]
+            },
+            "headers": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "x_padding_bytes": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+-[0-9]+$"
+                }
+              ]
+            },
+            "x_padding_obfs_mode": {
+              "type": "boolean"
+            },
+            "x_padding_method": {
+              "type": "string",
+              "enum": [
+                "repeat-x",
+                "tokenish"
+              ]
+            },
+            "x_padding_placement": {
+              "type": "string",
+              "enum": [
+                "queryInHeader",
+                "header",
+                "cookie",
+                "query"
+              ]
+            },
+            "x_padding_key": {
+              "type": "string"
+            },
+            "x_padding_header": {
+              "type": "string"
+            },
+            "session_id_placement": {
+              "type": "string",
+              "enum": [
+                "path",
+                "query",
+                "header",
+                "cookie"
+              ]
+            },
+            "session_id_key": {
+              "type": "string"
+            },
+            "session_id_table": {
+              "type": "string"
+            },
+            "session_id_length": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+-[0-9]+$"
+                }
+              ]
+            },
+            "seq_placement": {
+              "type": "string",
+              "enum": [
+                "path",
+                "query",
+                "header",
+                "cookie"
+              ]
+            },
+            "seq_key": {
+              "type": "string"
+            },
+            "uplink_http_method": {
+              "type": "string"
+            },
+            "uplink_data_placement": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "body",
+                "header",
+                "cookie"
+              ]
+            },
+            "uplink_data_key": {
+              "type": "string"
+            },
+            "uplink_chunk_size": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+-[0-9]+$"
+                }
+              ]
+            },
+            "server_max_header_bytes": {
+              "type": "integer"
+            },
+            "download_settings": {
+              "$ref": "#/$defs/V2RayXHTTPDownloadOptions"
+            },
+            "sc_max_buffered_posts": {
+              "type": "integer"
+            },
+            "no_sse_header": {
+              "type": "boolean"
+            },
+            "no_grpc_header": {
+              "type": "boolean"
+            },
+            "sc_max_each_post_bytes": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+-[0-9]+$"
+                }
+              ]
+            },
+            "sc_min_posts_interval_ms": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+-[0-9]+$"
+                }
+              ]
+            },
+            "xmux": {
+              "$ref": "#/$defs/V2RayXHTTPXMuxOptions"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
               "const": "http"
             },
             "host": {
@@ -18266,6 +18648,100 @@
           "additionalProperties": false
         }
       ]
+    },
+    "V2RayXHTTPDownloadOptions": {
+      "type": "object",
+      "properties": {
+        "server": {
+          "type": "string"
+        },
+        "server_port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "tls": {
+          "$ref": "#/$defs/OutboundTLSOptions"
+        },
+        "transport": {
+          "$ref": "#/$defs/V2RayTransport"
+        }
+      },
+      "additionalProperties": false
+    },
+    "V2RayXHTTPXMuxOptions": {
+      "type": "object",
+      "properties": {
+        "max_concurrency": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            {
+              "type": "string",
+              "pattern": "^[0-9]+-[0-9]+$"
+            }
+          ]
+        },
+        "max_connections": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            {
+              "type": "string",
+              "pattern": "^[0-9]+-[0-9]+$"
+            }
+          ]
+        },
+        "c_max_reuse_times": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            {
+              "type": "string",
+              "pattern": "^[0-9]+-[0-9]+$"
+            }
+          ]
+        },
+        "h_max_request_times": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            {
+              "type": "string",
+              "pattern": "^[0-9]+-[0-9]+$"
+            }
+          ]
+        },
+        "h_max_reusable_secs": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            {
+              "type": "string",
+              "pattern": "^[0-9]+-[0-9]+$"
+            }
+          ]
+        },
+        "h_keep_alive_period": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
     },
     "VLESSUser": {
       "type": "object",
