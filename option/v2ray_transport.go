@@ -12,19 +12,32 @@ import (
 )
 
 type _V2RayTransportOptions struct {
-	Type               string                  `json:"type" enum:"http,ws,quic,grpc,httpupgrade"`
+	Type               string                  `json:"type" enum:"http,ws,quic,grpc,httpupgrade,xhttp,splithttp"`
 	HTTPOptions        V2RayHTTPOptions        `json:"-"`
 	WebsocketOptions   V2RayWebsocketOptions   `json:"-"`
 	QUICOptions        V2RayQUICOptions        `json:"-"`
 	GRPCOptions        V2RayGRPCOptions        `json:"-"`
 	HTTPUpgradeOptions V2RayHTTPUpgradeOptions `json:"-"`
+	XHTTPOptions       V2RayXHTTPOptions       `json:"-"`
 }
 
 type V2RayTransportOptions _V2RayTransportOptions
 
+// RequiresDomainResolver reports whether the transport dials an additional
+// domain endpoint, independently of the outbound's primary server address.
+func (o *V2RayTransportOptions) RequiresDomainResolver() bool {
+	if o == nil || (o.Type != C.V2RayTransportTypeXHTTP && o.Type != C.V2RayTransportTypeSplitHTTP) {
+		return false
+	}
+	download := o.XHTTPOptions.DownloadSettings
+	return download != nil && download.ServerIsDomain()
+}
+
 func (o V2RayTransportOptions) MarshalJSON() ([]byte, error) {
 	var v any
 	switch o.Type {
+	case C.V2RayTransportTypeXHTTP, C.V2RayTransportTypeSplitHTTP:
+		v = o.XHTTPOptions
 	case C.V2RayTransportTypeHTTP:
 		v = o.HTTPOptions
 	case C.V2RayTransportTypeWebsocket:
@@ -50,6 +63,8 @@ func (o *V2RayTransportOptions) UnmarshalJSON(bytes []byte) error {
 	}
 	var v any
 	switch o.Type {
+	case C.V2RayTransportTypeXHTTP, C.V2RayTransportTypeSplitHTTP:
+		v = &o.XHTTPOptions
 	case C.V2RayTransportTypeHTTP:
 		v = &o.HTTPOptions
 	case C.V2RayTransportTypeWebsocket:
@@ -73,6 +88,8 @@ func (o *V2RayTransportOptions) UnmarshalJSON(bytes []byte) error {
 func (o V2RayTransportOptions) DescribeSchema(builder schema.Builder) (*schema.Node, error) {
 	return builder.Define("V2RayTransport", func() (*schema.Node, error) {
 		return schema.DiscriminatedUnion(builder, "type", true, []schema.UnionVariant{
+			{Value: C.V2RayTransportTypeXHTTP, StructType: reflect.TypeFor[V2RayXHTTPOptions]()},
+			{Value: C.V2RayTransportTypeSplitHTTP, StructType: reflect.TypeFor[V2RayXHTTPOptions]()},
 			{Value: C.V2RayTransportTypeHTTP, StructType: reflect.TypeFor[V2RayHTTPOptions]()},
 			{Value: C.V2RayTransportTypeWebsocket, StructType: reflect.TypeFor[V2RayWebsocketOptions]()},
 			{Value: C.V2RayTransportTypeQUIC, StructType: reflect.TypeFor[V2RayQUICOptions]()},

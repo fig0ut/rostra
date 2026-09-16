@@ -16,6 +16,7 @@ Available transports:
 * QUIC
 * gRPC
 * HTTPUpgrade
+* [XHTTP](xhttp.md)
 
 !!! warning "Difference from v2ray-core"
 
