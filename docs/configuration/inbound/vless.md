@@ -14,6 +14,7 @@
       "flow": ""
     }
   ],
+  "decryption": "none",
   "tls": {},
   "multiplex": {},
   "transport": {}
@@ -45,6 +46,12 @@ VLESS Sub-protocol.
 Available values:
 
 * `xtls-rprx-vision`
+
+#### decryption
+
+VLESS encryption. Disabled by default.
+
+See [VLESS encryption](../shared/vless-encryption.md) for configuration.
 
 #### tls
 

@@ -9,6 +9,7 @@ import (
 	"github.com/sagernet/sing-box/common/dialer"
 	"github.com/sagernet/sing-box/common/mux"
 	"github.com/sagernet/sing-box/common/tls"
+	"github.com/sagernet/sing-box/common/vlessencryption"
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
@@ -43,11 +44,19 @@ type Outbound struct {
 	tlsConfig       tls.Config
 	tlsDialer       tls.Dialer
 	transport       adapter.V2RayClientTransport
+	encryption      *vlessencryption.Client
 	packetAddr      bool
 	xudp            bool
 }
 
 func NewOutbound(ctx context.Context, router adapter.Router, logger log.ContextLogger, tag string, options option.VLESSOutboundOptions) (adapter.Outbound, error) {
+	encryption, err := vlessencryption.NewClient(options.Encryption)
+	if err != nil {
+		return nil, err
+	}
+	if encryption != nil && options.Flow != "" {
+		return nil, E.New("VLESS encryption: flow must be empty; Vision is not implemented")
+	}
 	outboundDialer, err := dialer.New(ctx, options.DialerOptions, options.ServerIsDomain() || options.Transport.RequiresDomainResolver())
 	if err != nil {
 		return nil, err
@@ -55,6 +64,7 @@ func NewOutbound(ctx context.Context, router adapter.Router, logger log.ContextL
 	outbound := &Outbound{
 		Adapter:    outbound.NewAdapterWithDialerOptions(C.TypeVLESS, tag, options.Network.Build(), options.DialerOptions),
 		logger:     logger,
+		encryption: encryption,
 		dialer:     outboundDialer,
 		serverAddr: options.ServerOptions.Build(),
 	}
@@ -66,7 +76,7 @@ func NewOutbound(ctx context.Context, router adapter.Router, logger log.ContextL
 			Options:       common.PtrValueOrDefault(options.TLS),
 			KTLSCompatible: common.PtrValueOrDefault(options.Transport).Type == "" &&
 				!common.PtrValueOrDefault(options.Multiplex).Enabled &&
-				options.Flow == "",
+				options.Flow == "" && encryption == nil,
 		})
 		if err != nil {
 			return nil, err
@@ -189,15 +199,7 @@ func (h *vlessDialer) DialContext(ctx context.Context, network string, destinati
 	ctx, metadata := adapter.ExtendContext(ctx)
 	metadata.Outbound = h.Tag()
 	metadata.Destination = destination
-	var conn net.Conn
-	var err error
-	if h.transport != nil {
-		conn, err = h.transport.DialContext(ctx)
-	} else if h.tlsDialer != nil {
-		conn, err = h.tlsDialer.DialTLSContext(ctx, h.serverAddr)
-	} else {
-		conn, err = h.dialer.DialContext(ctx, N.NetworkTCP, h.serverAddr)
-	}
+	conn, err := h.dialConnection(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -231,17 +233,8 @@ func (h *vlessDialer) ListenPacket(ctx context.Context, destination M.Socksaddr)
 	ctx, metadata := adapter.ExtendContext(ctx)
 	metadata.Outbound = h.Tag()
 	metadata.Destination = destination
-	var conn net.Conn
-	var err error
-	if h.transport != nil {
-		conn, err = h.transport.DialContext(ctx)
-	} else if h.tlsDialer != nil {
-		conn, err = h.tlsDialer.DialTLSContext(ctx, h.serverAddr)
-	} else {
-		conn, err = h.dialer.DialContext(ctx, N.NetworkTCP, h.serverAddr)
-	}
+	conn, err := h.dialConnection(ctx)
 	if err != nil {
-		common.Close(conn)
 		return nil, err
 	}
 	if h.xudp {
@@ -258,4 +251,26 @@ func (h *vlessDialer) ListenPacket(ctx context.Context, destination M.Socksaddr)
 	} else {
 		return h.client.DialEarlyPacketConn(conn, destination)
 	}
+}
+
+// dialConnection establishes the byte stream shared by TCP and UDP VLESS
+// requests. Encryption always runs before the existing VLESS request codec.
+func (h *vlessDialer) dialConnection(ctx context.Context) (net.Conn, error) {
+	var conn net.Conn
+	var err error
+	if h.transport != nil {
+		conn, err = h.transport.DialContext(ctx)
+	} else if h.tlsDialer != nil {
+		conn, err = h.tlsDialer.DialTLSContext(ctx, h.serverAddr)
+	} else {
+		conn, err = h.dialer.DialContext(ctx, N.NetworkTCP, h.serverAddr)
+	}
+	if err != nil {
+		common.Close(conn)
+		return nil, err
+	}
+	if h.encryption != nil {
+		return h.encryption.Handshake(ctx, conn)
+	}
+	return conn, nil
 }
