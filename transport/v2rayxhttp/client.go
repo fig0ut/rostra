@@ -36,13 +36,11 @@ type Client struct {
 
 func NewClient(ctx context.Context, rawDialer N.Dialer, serverAddr M.Socksaddr, options option.V2RayXHTTPOptions, tlsConfig tls.Config) (*Client, error) {
 	config, err := newConfig(options, serverAddr, tlsConfig)
-
 	if err != nil {
 		return nil, err
 	}
 
 	factory, err := transportFactory(rawDialer, serverAddr, config.version, tlsConfig, config.pool.keepAlive)
-
 	if err != nil {
 		return nil, err
 	}
@@ -126,11 +124,9 @@ func (c *Client) DialContext(ctx context.Context) (net.Conn, error) {
 
 	var pending atomic.Int32
 	pending.Store(1)
-
 	if c.config.mode == modeStream {
 		pending.Store(2)
 	}
-
 	ready := func() {
 		// Both directions of stream-up must receive successful headers. The
 		// packet-up GET establishes the download; POSTs are sent as data arrives.
