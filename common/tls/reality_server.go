@@ -109,12 +109,12 @@ func NewRealityServer(ctx context.Context, logger log.ContextLogger, options opt
 	} else {
 		for i, shortIDString := range options.Reality.ShortID {
 			var shortID [8]byte
-			decodedLen, err := hex.Decode(shortID[:], []byte(shortIDString))
+			if len(shortIDString) > hex.EncodedLen(len(shortID)) {
+				return nil, E.New("invalid short_id[", i, "]: maximum length is 16 hex characters")
+			}
+			_, err := hex.Decode(shortID[:], []byte(shortIDString))
 			if err != nil {
 				return nil, E.Cause(err, "decode short_id[", i, "]: ", shortIDString)
-			}
-			if decodedLen > 8 {
-				return nil, E.New("invalid short_id[", i, "]: ", shortIDString)
 			}
 			tlsConfig.ShortIds[shortID] = true
 		}
@@ -161,6 +161,7 @@ func (c *RealityServerConfig) ServerName() string {
 
 func (c *RealityServerConfig) SetServerName(serverName string) {
 	c.config.ServerName = serverName
+	c.config.ServerNames = map[string]bool{serverName: true}
 }
 
 func (c *RealityServerConfig) NextProtos() []string {
@@ -200,11 +201,41 @@ func (c *RealityServerConfig) Server(conn net.Conn) (Conn, error) {
 }
 
 func (c *RealityServerConfig) ServerHandshake(ctx context.Context, conn net.Conn) (Conn, error) {
-	tlsConn, err := utls.RealityServer(ctx, conn, c.config)
+	// uTLS uses the context for dialing, but its subsequent reads and copies
+	// are blocking. Cover both sockets, including a stalled camouflage target.
+	stopClient := realityCloseOnCancel(ctx, conn)
+	stopTarget := func() {}
+	config := c.config.Clone()
+	dial := config.DialContext
+	config.DialContext = func(ctx context.Context, network, address string) (net.Conn, error) {
+		target, err := dial(ctx, network, address)
+		if err == nil {
+			stopTarget = realityCloseOnCancel(ctx, target)
+		}
+		return target, err
+	}
+	tlsConn, err := utls.RealityServer(ctx, conn, config)
+	// Stop and join callbacks before handing a successful connection to callers.
+	stopClient()
+	stopTarget()
+	if ctx.Err() != nil {
+		conn.Close()
+		return nil, ctx.Err()
+	}
 	if err != nil {
 		return nil, err
 	}
 	return &realityConnWrapper{Conn: tlsConn}, nil
+}
+
+func realityCloseOnCancel(ctx context.Context, conn net.Conn) func() {
+	done := make(chan struct{})
+	stop := context.AfterFunc(ctx, func() { conn.Close(); close(done) })
+	return func() {
+		if !stop() {
+			<-done
+		}
+	}
 }
 
 func (c *RealityServerConfig) Clone() Config {

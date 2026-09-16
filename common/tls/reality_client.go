@@ -3,7 +3,6 @@
 package tls
 
 import (
-	"bytes"
 	"context"
 	"crypto/aes"
 	"crypto/cipher"
@@ -22,19 +21,15 @@ import (
 	mRand "math/rand"
 	"net"
 	"net/http"
-	"reflect"
 	"strings"
+	"sync/atomic"
 	"time"
-	"unsafe"
 
-	"github.com/sagernet/sing-box/adapter"
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/option"
-	"github.com/sagernet/sing/common"
 	"github.com/sagernet/sing/common/debug"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"
-	"github.com/sagernet/sing/common/ntp"
 	aTLS "github.com/sagernet/sing/common/tls"
 
 	utls "github.com/metacubex/utls"
@@ -76,12 +71,12 @@ func newRealityClient(ctx context.Context, logger logger.ContextLogger, serverAd
 		return nil, E.New("invalid public_key")
 	}
 	var shortID [8]byte
-	decodedLen, err := hex.Decode(shortID[:], []byte(options.Reality.ShortID))
+	if len(options.Reality.ShortID) > hex.EncodedLen(len(shortID)) {
+		return nil, E.New("invalid short_id: maximum length is 16 hex characters")
+	}
+	_, err = hex.Decode(shortID[:], []byte(options.Reality.ShortID))
 	if err != nil {
 		return nil, E.Cause(err, "decode short_id")
-	}
-	if decodedLen > 8 {
-		return nil, E.New("invalid short_id")
 	}
 
 	var config Config = &RealityClientConfig{ctx, uClient.(*UTLSClientConfig), publicKey, shortID}
@@ -134,43 +129,34 @@ func (e *RealityClientConfig) Client(conn net.Conn) (Conn, error) {
 func (e *RealityClientConfig) ClientHandshake(ctx context.Context, conn net.Conn) (aTLS.Conn, error) {
 	verifier := &realityVerifier{
 		serverName: e.uClient.ServerName(),
+		roots:      e.uClient.config.RootCAs,
+		time:       e.uClient.config.Time,
 	}
 	uConfig := e.uClient.config.Clone()
 	uConfig.InsecureSkipVerify = true
 	uConfig.SessionTicketsDisabled = true
 	uConfig.VerifyPeerCertificate = verifier.VerifyPeerCertificate
 	uConn := utls.UClient(conn, uConfig, e.uClient.id)
-	verifier.UConn = uConn
 	err := uConn.BuildHandshakeState()
 	if err != nil {
 		return nil, err
 	}
-	for _, extension := range uConn.Extensions {
-		if ce, ok := extension.(*utls.SupportedCurvesExtension); ok {
-			ce.Curves = common.Filter(ce.Curves, func(curveID utls.CurveID) bool {
-				return curveID != utls.X25519MLKEM768
-			})
-		}
-		if ks, ok := extension.(*utls.KeyShareExtension); ok {
-			ks.KeyShares = common.Filter(ks.KeyShares, func(share utls.KeyShare) bool {
-				return share.Group != utls.X25519MLKEM768
-			})
-		}
-	}
-	err = uConn.BuildHandshakeState()
-	if err != nil {
-		return nil, err
-	}
+	// Preserve the fingerprint's hybrid key share. Current REALITY servers
+	// require X25519MLKEM768 even when authentication uses standalone X25519.
 
-	if len(uConfig.NextProtos) > 0 {
+	if nextProtos := e.uClient.NextProtos(); len(nextProtos) > 0 {
 		for _, extension := range uConn.Extensions {
 			if alpnExtension, isALPN := extension.(*utls.ALPNExtension); isALPN {
-				alpnExtension.AlpnProtocols = uConfig.NextProtos
+				alpnExtension.AlpnProtocols = nextProtos
 				break
 			}
 		}
 	}
 
+	// Serialize the configured extensions before authenticating the hello.
+	if err = uConn.BuildHandshakeState(); err != nil {
+		return nil, err
+	}
 	hello := uConn.HandshakeState.Hello
 	hello.SessionId = make([]byte, 32)
 	copy(hello.Raw[39:], hello.SessionId)
@@ -181,12 +167,11 @@ func (e *RealityClientConfig) ClientHandshake(ctx context.Context, conn net.Conn
 	} else {
 		nowTime = time.Now()
 	}
-	binary.BigEndian.PutUint64(hello.SessionId, uint64(nowTime.Unix()))
 
 	hello.SessionId[0] = 1
 	hello.SessionId[1] = 8
 	hello.SessionId[2] = 1
-	binary.BigEndian.PutUint32(hello.SessionId[4:], uint32(time.Now().Unix()))
+	binary.BigEndian.PutUint32(hello.SessionId[4:], uint32(nowTime.Unix()))
 	copy(hello.SessionId[8:], e.shortID[:])
 	if debug.Enabled {
 		fmt.Printf("REALITY hello.sessionId[:16]: %v\n", hello.SessionId[:16])
@@ -200,6 +185,9 @@ func (e *RealityClientConfig) ClientHandshake(ctx context.Context, conn net.Conn
 		return nil, E.New("nil KeyShareKeys")
 	}
 	ecdheKey := keyShareKeys.Ecdhe
+	if ecdheKey == nil {
+		ecdheKey = keyShareKeys.MlkemEcdhe
+	}
 	if ecdheKey == nil {
 		return nil, E.New("nil ecdheKey")
 	}
@@ -221,7 +209,6 @@ func (e *RealityClientConfig) ClientHandshake(ctx context.Context, conn net.Conn
 	copy(hello.Raw[39:], hello.SessionId)
 	if debug.Enabled {
 		fmt.Printf("REALITY hello.sessionId: %v\n", hello.SessionId)
-		fmt.Printf("REALITY uConn.AuthKey: %v\n", authKey)
 	}
 
 	err = uConn.HandshakeContext(ctx)
@@ -234,27 +221,46 @@ func (e *RealityClientConfig) ClientHandshake(ctx context.Context, conn net.Conn
 	}
 
 	if !verifier.verified {
-		go realityClientFallback(e.ctx, uConn, e.uClient.ServerName(), e.uClient.id)
+		// Finish fallback while we still own the connection; dialers close it on error.
+		realityClientFallback(ctx, uConn, e.uClient.ServerName(), e.uClient.id)
 		return nil, E.New("reality verification failed")
 	}
 
 	return &realityClientConnWrapper{uConn}, nil
 }
 
-func realityClientFallback(ctx context.Context, uConn net.Conn, serverName string, fingerprint utls.ClientHelloID) {
+func realityClientFallback(ctx context.Context, uConn *utls.UConn, serverName string, fingerprint utls.ClientHelloID) {
 	defer uConn.Close()
-	client := &http.Client{
-		Transport: &http2.Transport{
-			DialTLSContext: func(ctx context.Context, network, addr string, config *tls.Config) (net.Conn, error) {
-				return uConn, nil
-			},
-			TLSClientConfig: &tls.Config{
-				Time:    ntp.TimeFuncFromContext(ctx),
-				RootCAs: adapter.RootPoolFromContext(ctx),
-			},
-		},
+	ctx, cancel := context.WithTimeout(ctx, C.TCPTimeout)
+	defer cancel()
+	deadline, _ := ctx.Deadline()
+	if err := uConn.SetDeadline(deadline); err != nil {
+		return
 	}
-	request, _ := http.NewRequest("GET", "https://"+serverName, nil)
+	stop := context.AfterFunc(ctx, func() { uConn.Close() })
+	defer stop()
+	var claimed atomic.Bool
+	dial := func(context.Context, string, string) (net.Conn, error) {
+		if !claimed.CompareAndSwap(false, true) {
+			return nil, net.ErrClosed
+		}
+		return uConn, nil
+	}
+	var transport http.RoundTripper
+	if uConn.ConnectionState().NegotiatedProtocol == "h2" {
+		transport = &http2.Transport{DialTLSContext: func(ctx context.Context, network, addr string, _ *tls.Config) (net.Conn, error) {
+			return dial(ctx, network, addr)
+		}}
+	} else {
+		transport = &http.Transport{DialTLSContext: dial}
+	}
+	client := &http.Client{Transport: transport}
+	defer client.CloseIdleConnections()
+	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	request, err := http.NewRequestWithContext(ctx, "GET", "https://"+serverName, nil)
+	if err != nil {
+		return
+	}
 	request.Header.Set("User-Agent", fingerprint.Client)
 	request.AddCookie(&http.Cookie{Name: "padding", Value: strings.Repeat("0", mRand.Intn(32)+30)})
 	response, err := client.Do(request)
@@ -275,26 +281,40 @@ func (e *RealityClientConfig) Clone() Config {
 }
 
 type realityVerifier struct {
-	*utls.UConn
 	serverName string
+	roots      *x509.CertPool
+	time       func() time.Time
 	authKey    []byte
 	verified   bool
 }
 
 func (c *realityVerifier) VerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
-	p, _ := reflect.TypeFor[utls.Conn]().FieldByName("peerCertificates")
-	certs := *(*([]*x509.Certificate))(unsafe.Add(unsafe.Pointer(c.Conn), p.Offset))
+	if len(rawCerts) == 0 {
+		return E.New("reality: missing peer certificate")
+	}
+	certs := make([]*x509.Certificate, len(rawCerts))
+	for i, raw := range rawCerts {
+		cert, err := x509.ParseCertificate(raw)
+		if err != nil {
+			return err
+		}
+		certs[i] = cert
+	}
 	if pub, ok := certs[0].PublicKey.(ed25519.PublicKey); ok {
 		h := hmac.New(sha512.New, c.authKey)
 		h.Write(pub)
-		if bytes.Equal(h.Sum(nil), certs[0].Signature) {
+		if hmac.Equal(h.Sum(nil), certs[0].Signature) {
 			c.verified = true
 			return nil
 		}
 	}
 	opts := x509.VerifyOptions{
 		DNSName:       c.serverName,
+		Roots:         c.roots,
 		Intermediates: x509.NewCertPool(),
+	}
+	if c.time != nil {
+		opts.CurrentTime = c.time()
 	}
 	for _, cert := range certs[1:] {
 		opts.Intermediates.AddCert(cert)
