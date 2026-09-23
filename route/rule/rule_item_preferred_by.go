@@ -33,6 +33,9 @@ func (r *PreferredByItem) Start() error {
 			return E.New("outbound not found: ", outboundTag)
 		}
 		outboundWithPreferredRoutes, withRoutes := rawOutbound.(adapter.OutboundWithPreferredRoutes)
+		if dynamic, ok := rawOutbound.(interface{ PreferredRoutesSupported() bool }); ok {
+			withRoutes = withRoutes && dynamic.PreferredRoutesSupported()
+		}
 		if !withRoutes {
 			return E.New("outbound type does not support preferred routes: ", rawOutbound.Type())
 		}

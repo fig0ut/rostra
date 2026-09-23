@@ -108,6 +108,12 @@
         "$ref": "#/$defs/Outbound"
       }
     },
+    "outbound_set": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/OutboundSet"
+      }
+    },
     "route": {
       "$ref": "#/$defs/RouteOptions"
     },
@@ -8669,6 +8675,9 @@
               "type": "string",
               "x-tag-reference": "inbound"
             },
+            "decryption": {
+              "type": "string"
+            },
             "users": {
               "type": "array",
               "items": {
@@ -12612,6 +12621,21 @@
             "tag": {
               "type": "string"
             },
+            "outbound_set": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "x-tag-reference": "outbound_set"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "x-tag-reference": "outbound_set"
+                  }
+                }
+              ]
+            },
             "outbounds": {
               "type": "array",
               "items": {
@@ -14378,6 +14402,21 @@
             "tag": {
               "type": "string"
             },
+            "outbound_set": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "x-tag-reference": "outbound_set"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "x-tag-reference": "outbound_set"
+                  }
+                }
+              ]
+            },
             "outbounds": {
               "type": "array",
               "items": {
@@ -14525,6 +14564,9 @@
               "maximum": 65535
             },
             "uuid": {
+              "type": "string"
+            },
+            "encryption": {
               "type": "string"
             },
             "flow": {
@@ -14827,6 +14869,151 @@
         }
       },
       "additionalProperties": false
+    },
+    "OutboundSet": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "inline",
+                ""
+              ]
+            },
+            "tag": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "outbounds": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "tag"
+                ]
+              }
+            },
+            "override": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "required": [
+            "outbounds",
+            "tag"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "local"
+            },
+            "tag": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "source"
+              ]
+            },
+            "override": {
+              "type": "object",
+              "properties": {}
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "path",
+            "tag"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "remote"
+            },
+            "tag": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "source"
+              ]
+            },
+            "override": {
+              "type": "object",
+              "properties": {}
+            },
+            "url": {
+              "type": "string"
+            },
+            "initial_path": {
+              "type": "string"
+            },
+            "http_client": {
+              "$ref": "#/$defs/HTTPClientReference"
+            },
+            "update_interval": {
+              "$ref": "#/$defs/Duration"
+            }
+          },
+          "required": [
+            "type",
+            "url",
+            "tag"
+          ],
+          "additionalProperties": false
+        }
+      ]
     },
     "OutboundTLSOptions": {
       "type": "object",

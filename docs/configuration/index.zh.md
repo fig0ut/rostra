@@ -16,6 +16,7 @@ sing-box 使用 JSON 作为配置文件格式。
   "endpoints": [],
   "inbounds": [],
   "outbounds": [],
+  "outbound_set": [],
   "route": {},
   "services": [],
   "experimental": {}
@@ -36,6 +37,7 @@ sing-box 使用 JSON 作为配置文件格式。
 | `network_namespaces` | [网络命名空间](./network-namespace/) |
 | `endpoints`    | [端点](./endpoint/)      |
 | `inbounds`     | [入站](./inbound/)       |
+| `outbound_set` | [出站集合](./outbound-set/) |
 | `outbounds`    | [出站](./outbound/)      |
 | `route`        | [路由](./route/)         |
 | `services`     | [服务](./service/)       |

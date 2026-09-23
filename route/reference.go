@@ -24,6 +24,7 @@ type ReferenceManager struct {
 	dnsRules               []option.DNSRule
 	staticOutbounds        []string
 	staticTransports       []string
+	outboundTransports     atomic.Pointer[[]string]
 	subscriber             *observable.Subscriber[struct{}]
 	pauseManager           pause.Manager
 	devicePaused           atomic.Bool
@@ -39,9 +40,6 @@ func NewReferenceManager(ctx context.Context, logger log.ContextLogger, options 
 	if options.NTP != nil && options.NTP.Enabled && options.NTP.Detour != "" {
 		staticOutbounds = append(staticOutbounds, options.NTP.Detour)
 	}
-	for _, outboundOptions := range options.Outbounds {
-		staticTransports = appendDomainResolver(staticTransports, outboundOptions.Options)
-	}
 	for _, endpointOptions := range options.Endpoints {
 		staticTransports = appendDomainResolver(staticTransports, endpointOptions.Options)
 	}
@@ -55,7 +53,7 @@ func NewReferenceManager(ctx context.Context, logger log.ContextLogger, options 
 	if options.DNS != nil {
 		dnsRules = options.DNS.Rules
 	}
-	return &ReferenceManager{
+	manager := &ReferenceManager{
 		ctx:              ctx,
 		logger:           logger,
 		rules:            rules,
@@ -64,6 +62,17 @@ func NewReferenceManager(ctx context.Context, logger log.ContextLogger, options 
 		staticTransports: staticTransports,
 		pauseManager:     service.FromContext[pause.Manager](ctx),
 	}
+	manager.UpdateOutbounds(options.Outbounds)
+	return manager
+}
+
+// UpdateOutbounds publishes DNS resolver references for a new outbound snapshot.
+func (m *ReferenceManager) UpdateOutbounds(outbounds []option.Outbound) {
+	var transports []string
+	for _, outbound := range outbounds {
+		transports = appendDomainResolver(transports, outbound.Options)
+	}
+	m.outboundTransports.Store(&transports)
 }
 
 func appendDomainResolver(transports []string, rawOptions any) []string {
@@ -148,6 +157,9 @@ func (m *ReferenceManager) update() {
 	httpClientManager := service.FromContext[adapter.HTTPClientManager](m.ctx)
 
 	transportQueue := slices.Clone(m.staticTransports)
+	if transports := m.outboundTransports.Load(); transports != nil {
+		transportQueue = append(transportQueue, *transports...)
+	}
 	outboundQueue := slices.Clone(m.staticOutbounds)
 	if !collectDNSRuleReferences(m.dnsRules, mode, &transportQueue) {
 		defaultTransport := transportManager.Default()
