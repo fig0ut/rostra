@@ -3,6 +3,7 @@ package box
 import (
 	"context"
 	"io"
+	"net/http"
 	"time"
 
 	"github.com/sagernet/sing-box/adapter"
@@ -27,6 +28,7 @@ import (
 	"github.com/sagernet/sing-box/experimental/deprecated"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
+	"github.com/sagernet/sing-box/outboundset"
 	"github.com/sagernet/sing-box/protocol/direct"
 	"github.com/sagernet/sing-box/route"
 	"github.com/sagernet/sing/common"
@@ -56,6 +58,7 @@ type Box struct {
 	router              *route.Router
 	referenceManager    *route.ReferenceManager
 	httpClientService   adapter.LifecycleService
+	outboundSets        *outboundset.Manager
 	internalService     []adapter.LifecycleService
 	ntpService          *ntp.Service
 	scope               *adapter.Scope
@@ -183,6 +186,34 @@ func New(options Options) (*Box, error) {
 		return nil, E.Cause(err, "create log factory")
 	}
 	service.MustRegister[log.Factory](ctx, logFactory)
+	outboundSets, err := outboundset.PrepareWithDownloader(ctx, logFactory.NewLogger("outbound-set"), options.Options, func(downloadContext context.Context, url string, client option.HTTPClientOptions, bootstrapOptions option.Options) ([]byte, error) {
+		// Keep Box construction here to avoid an outboundset -> box import cycle.
+		instance, err := New(Options{Context: service.ExtendContext(downloadContext), Options: bootstrapOptions})
+		if err != nil {
+			return nil, E.Cause(err, "create outbound-set bootstrap")
+		}
+		defer instance.Close()
+		if err = instance.PreStart(); err != nil {
+			return nil, E.Cause(err, "start outbound-set bootstrap")
+		}
+		// Endpoints have an additional Start stage after PreStart.
+		if err = instance.startComponents(adapter.StartStateStart, boxComponent{"endpoint", instance.endpoint}); err != nil {
+			return nil, err
+		}
+		clients := service.FromContext[adapter.HTTPClientManager](instance.scope.Context())
+		transport, err := clients.ResolveTransport(instance.scope.Context(), instance.logger, client)
+		if err != nil {
+			return nil, err
+		}
+		defer transport.CloseIdleConnections()
+		return outboundset.Download(downloadContext, &http.Client{Transport: transport, Timeout: 30 * time.Second}, url)
+	})
+	if err != nil {
+		logFactory.Close()
+		return nil, E.Cause(err, "initialize outbound sets")
+	}
+
+	options.Options = outboundSets.Options
 
 	var internalServices []adapter.LifecycleService
 	routeOptions := common.PtrValueOrDefault(options.Route)
@@ -465,6 +496,10 @@ func New(options Options) (*Box, error) {
 		})
 		timeService.TimeService = ntpService
 	}
+	outboundSets.SaveCache()
+	outboundSetManager := outboundSets.Attach(ctx, outboundManager, outboundRegistry, router, func(updated option.Options) {
+		referenceManager.UpdateOutbounds(updated.Outbounds)
+	})
 	return &Box{
 		network:             networkManager,
 		endpoint:            endpointManager,
@@ -478,6 +513,7 @@ func New(options Options) (*Box, error) {
 		router:              router,
 		referenceManager:    referenceManager,
 		httpClientService:   httpClientService,
+		outboundSets:        outboundSetManager,
 		createdAt:           createdAt,
 		debugOptions:        debugOptions,
 		logFactory:          logFactory,
@@ -582,6 +618,11 @@ func (s *Box) preStart() error {
 	if err != nil {
 		return err
 	}
+	if s.outboundSets != nil {
+		if err = s.outboundSets.Initialize(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -650,11 +691,19 @@ func (s *Box) start() error {
 	if err != nil {
 		return err
 	}
+	if s.outboundSets != nil {
+		s.outboundSets.Start()
+	}
 	return nil
 }
 
 func (s *Box) Close() error {
-	return s.scope.Close()
+	// Stop refreshes and release proxy scopes before tearing down their services.
+	var err error
+	if s.outboundSets != nil {
+		err = s.outboundSets.Close()
+	}
+	return E.Errors(err, s.scope.Close())
 }
 
 func (s *Box) Network() adapter.NetworkManager {

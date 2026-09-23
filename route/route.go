@@ -495,6 +495,12 @@ func (r *Router) preMatchFlow(ctx context.Context, metadata *adapter.InboundCont
 		return continueResult
 	}
 	outbound = chain[len(chain)-1]
+	if provider, ok := outbound.(adapter.FlowOutboundProvider); ok {
+		outbound = provider.FlowOutbound(metadata.Network, metadata.Destination.Addr)
+		if outbound == nil {
+			return continueResult
+		}
+	}
 	flowOutbound, isFlowOutbound := outbound.(adapter.FlowOutbound)
 	if !isFlowOutbound {
 		return continueResult
