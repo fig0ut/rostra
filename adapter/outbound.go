@@ -37,6 +37,12 @@ type FlowOutbound interface {
 	PreMatchFlow(network string, destination netip.Addr) PreMatchAction
 }
 
+// FlowOutboundProvider resolves a stable L3 port from a dynamically replaced
+// outbound. The port must remain usable until its attached dispatchers close.
+type FlowOutboundProvider interface {
+	FlowOutbound(network string, destination netip.Addr) FlowOutbound
+}
+
 type OutboundRegistry interface {
 	option.OutboundOptionsRegistry
 	CreateOutbound(ctx context.Context, router Router, logger log.ContextLogger, tag string, outboundType string, options any) (Outbound, error)

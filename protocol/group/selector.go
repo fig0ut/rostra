@@ -4,6 +4,8 @@ import (
 	"context"
 	"io"
 	"net"
+	"slices"
+	"sync"
 
 	"github.com/sagernet/sing-box/adapter"
 	"github.com/sagernet/sing-box/adapter/outbound"
@@ -31,6 +33,7 @@ var (
 
 type Selector struct {
 	outbound.Adapter
+	access                       sync.RWMutex
 	ctx                          context.Context
 	outbound                     adapter.OutboundManager
 	logger                       logger.ContextLogger
@@ -110,7 +113,36 @@ func (s *Selector) Start(stage adapter.StartStage, scope *adapter.Scope) error {
 }
 
 func (s *Selector) All() []string {
-	return s.tags
+	s.access.RLock()
+	defer s.access.RUnlock()
+	return slices.Clone(s.tags)
+}
+
+func (s *Selector) Dependencies() []string { return s.All() }
+
+// UpdateOutbounds preserves the selection by tag, then falls back to the
+// configured default or the first member. The caller supplies a nonempty batch.
+func (s *Selector) UpdateOutbounds(members []adapter.Outbound) {
+	s.access.Lock()
+	defer s.access.Unlock()
+	tags := make([]string, 0, len(members))
+	byTag := make(map[string]adapter.Outbound, len(members))
+	for _, member := range members {
+		tags = append(tags, member.Tag())
+		byTag[member.Tag()] = member
+	}
+	var selected adapter.Outbound
+	if previous := s.selected.Load(); previous != nil {
+		selected = byTag[previous.Tag()]
+	}
+	if selected == nil {
+		selected = byTag[s.defaultTag]
+	}
+	if selected == nil {
+		selected = members[0]
+	}
+	s.tags, s.outbounds = tags, byTag
+	s.selected.Store(selected)
 }
 
 func (s *Selector) Selected(network string) adapter.Outbound {
@@ -124,12 +156,14 @@ func (s *Selector) AttachConnection(closer io.Closer) func() {
 func (s *Selector) References() []string {
 	selected := s.selected.Load()
 	if selected == nil {
-		return s.tags[:1]
+		return s.All()[:1]
 	}
 	return []string{selected.Tag()}
 }
 
 func (s *Selector) SelectOutbound(tag string) bool {
+	s.access.RLock()
+	defer s.access.RUnlock()
 	detour, loaded := s.outbounds[tag]
 	if !loaded {
 		return false
