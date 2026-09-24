@@ -34,6 +34,7 @@ on:
     branches:
       - stable
       - testing
+      - my-testing
       - unstable
 
 concurrency:
@@ -365,11 +366,16 @@ jobs:
             -p "dist/sing-box_${{ needs.calculate_version.outputs.version }}_${{ matrix.os }}_${{ matrix.debian }}.deb" \
             --architecture ${{ matrix.debian }} \
             dist/sing-box=/usr/bin/sing-box
-          rm -rf $HOME/.gnupg
-          gpg --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" --import <<EOF
-          ${{ secrets.GPG_KEY }}
-          EOF
-          debsigs --sign=origin -k ${{ secrets.GPG_KEY_ID }} --gpgopts '--pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}"' dist/*.deb
+          set +x
+          SIGNING_PASSPHRASE_FILE=$(mktemp "$RUNNER_TEMP/gpg-passphrase.XXXXXX")
+          trap 'rm -f "$SIGNING_PASSPHRASE_FILE"' EXIT
+          printf '%s' "$GPG_PASSPHRASE" > "$SIGNING_PASSPHRASE_FILE"
+          printf '%s' "$GPG_KEY" | gpg --batch --pinentry-mode loopback --passphrase-file "$SIGNING_PASSPHRASE_FILE" --import
+          debsigs --sign=origin -k "$GPG_KEY_ID" --gpgopts "--batch --pinentry-mode loopback --passphrase-file $SIGNING_PASSPHRASE_FILE" dist/*.deb
+        env:
+          GPG_KEY: ${{ secrets.GPG_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       - name: Package RPM
         if: matrix.rpm != ''
         run: |-
@@ -382,14 +388,20 @@ jobs:
             -p "dist/sing-box_${{ needs.calculate_version.outputs.version }}_${{ matrix.os }}_${{ matrix.rpm }}.rpm" \
             --architecture ${{ matrix.rpm }} \
             dist/sing-box=/usr/bin/sing-box
-          cat > $HOME/.rpmmacros <<EOF
-          %_gpg_name ${{ secrets.GPG_KEY_ID }}
-          %_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase ${{ secrets.GPG_PASSPHRASE }}
+          set +x
+          SIGNING_PASSPHRASE_FILE=$(mktemp "$RUNNER_TEMP/gpg-passphrase.XXXXXX")
+          trap 'rm -f "$SIGNING_PASSPHRASE_FILE"' EXIT
+          printf '%s' "$GPG_PASSPHRASE" > "$SIGNING_PASSPHRASE_FILE"
+          cat > "$HOME/.rpmmacros" <<EOF
+          %_gpg_name $GPG_KEY_ID
+          %_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase-file $SIGNING_PASSPHRASE_FILE
           EOF
-          gpg --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" --import <<EOF
-          ${{ secrets.GPG_KEY }}
-          EOF
+          printf '%s' "$GPG_KEY" | gpg --batch --pinentry-mode loopback --passphrase-file "$SIGNING_PASSPHRASE_FILE" --import
           rpmsign --addsign dist/*.rpm
+        env:
+          GPG_KEY: ${{ secrets.GPG_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       - name: Package Pacman
         if: matrix.pacman != ''
         run: |-
@@ -798,7 +810,7 @@ jobs:
           cd clients/android
           git checkout main
       - name: Checkout dev branch
-        if: github.ref == 'refs/heads/testing'
+        if: github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/my-testing'
         run: |-
           cd clients/android
           git checkout dev
@@ -818,6 +830,15 @@ jobs:
         if: github.event_name != 'workflow_dispatch'
         run: |-
           go run -v ./cmd/internal/update_android_version --ci --nightly
+      - name: Restore Android signing keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          : "${ANDROID_KEYSTORE_BASE64:?ANDROID_KEYSTORE_BASE64 secret is required}"
+          install -m 600 /dev/null clients/android/app/release.keystore
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > clients/android/app/release.keystore
+          test -s clients/android/app/release.keystore
       - name: Build
         run: |-
           mkdir -p clients/android/app/libs
@@ -906,7 +927,7 @@ jobs:
           cd clients/android
           git checkout main
       - name: Checkout dev branch
-        if: github.ref == 'refs/heads/testing'
+        if: github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/my-testing'
         run: |-
           cd clients/android
           git checkout dev
@@ -937,6 +958,15 @@ jobs:
         env:
           LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
           SERVICE_ACCOUNT_CREDENTIALS: ${{ secrets.SERVICE_ACCOUNT_CREDENTIALS }}
+      - name: Restore Android signing keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          : "${ANDROID_KEYSTORE_BASE64:?ANDROID_KEYSTORE_BASE64 secret is required}"
+          install -m 600 /dev/null clients/android/app/release.keystore
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > clients/android/app/release.keystore
+          test -s clients/android/app/release.keystore
       - name: Publish to Google Play
         run: |-
           cd clients/android
@@ -946,7 +976,8 @@ jobs:
           LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
   build_windows_client:
     name: Build Windows client (${{ matrix.desktop_arch }})
-    if: (github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Windows') && github.ref != 'refs/heads/oldstable'
+    # Opt in with the repository variable after configuring signing credentials.
+    if: vars.BUILD_WINDOWS_CLIENT == 'true' && ((github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Windows') && github.ref != 'refs/heads/oldstable')
     runs-on: windows-latest
     needs:
       - calculate_version
@@ -968,7 +999,7 @@ jobs:
         if: github.ref == 'refs/heads/stable' && github.event_name != 'workflow_dispatch'
         run: git -C clients/desktop checkout main
       - name: Checkout dev branch
-        if: github.ref == 'refs/heads/testing'
+        if: github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/my-testing'
         run: git -C clients/desktop checkout dev
       - name: Checkout desktop submodules
         run: git -C clients/desktop submodule update --init --recursive
@@ -1080,7 +1111,7 @@ jobs:
         if: github.ref == 'refs/heads/stable' && github.event_name != 'workflow_dispatch'
         run: git -C clients/desktop checkout main
       - name: Checkout dev branch
-        if: github.ref == 'refs/heads/testing'
+        if: github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/my-testing'
         run: git -C clients/desktop checkout dev
       - name: Checkout desktop submodules
         run: git -C clients/desktop submodule update --init --recursive
@@ -1312,7 +1343,7 @@ jobs:
       matrix:
         include:
           - name: macOS-standalone
-            if: ${{ github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Apple-release' || inputs.build == 'macOS-standalone' }}
+            if: ${{ vars.BUILD_APPLE_SIGNED_CLIENTS == 'true' && (github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Apple-release' || inputs.build == 'macOS-standalone') }}
             type: standalone
             platform: macos
             variant: all
@@ -1376,7 +1407,7 @@ jobs:
           cd clients/apple
           git checkout main
       - name: Checkout dev branch
-        if: matrix.if && github.ref == 'refs/heads/testing'
+        if: matrix.if && (github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/my-testing')
         run: |-
           cd clients/apple
           git checkout dev
@@ -1634,7 +1665,8 @@ jobs:
   build_apple_app_store:
     name: Build Apple App Store clients
     runs-on: ${{ matrix.if && 'xcode-27' || 'ubuntu-latest' }}
-    if: github.event_name == 'workflow_dispatch' && (inputs.build == 'All' || inputs.build == 'Apple' || inputs.build == 'iOS' || inputs.build == 'macOS' || inputs.build == 'tvOS')
+    # Opt in with the repository variable after configuring signing credentials.
+    if: vars.BUILD_APPLE_SIGNED_CLIENTS == 'true' && (github.event_name == 'workflow_dispatch' && (inputs.build == 'All' || inputs.build == 'Apple' || inputs.build == 'iOS' || inputs.build == 'macOS' || inputs.build == 'tvOS'))
     needs:
       - calculate_version
       - build_apple_library
@@ -1681,7 +1713,14 @@ jobs:
     steps: *build_apple_steps
   upload:
     name: Upload builds
-    if: "!failure() && github.event_name == 'workflow_dispatch' && (inputs.build == 'All' || inputs.build == 'Binary' || inputs.build == 'Android' || inputs.build == 'Windows' || inputs.build == 'Linux' || inputs.build == 'Apple-release' || inputs.build == 'macOS-standalone' || inputs.build == 'iOS-jailbreak')"
+    # Explicit status checks allow skipped optional clients, but no empty releases.
+    if: >-
+      !failure() && !cancelled() && github.event_name == 'workflow_dispatch' &&
+      (inputs.build == 'All' || inputs.build == 'Binary' || inputs.build == 'Android' ||
+      (inputs.build == 'Windows' && vars.BUILD_WINDOWS_CLIENT == 'true') ||
+      inputs.build == 'Linux' || inputs.build == 'Apple-release' ||
+      (inputs.build == 'macOS-standalone' && vars.BUILD_APPLE_SIGNED_CLIENTS == 'true') ||
+      inputs.build == 'iOS-jailbreak')
     runs-on: ubuntu-latest
     permissions:
       contents: write
