@@ -183,11 +183,16 @@ jobs:
             -p "dist/${NAME}_${{ needs.calculate_version.outputs.version }}_linux_${{ matrix.debian }}.deb" \
             --architecture ${{ matrix.debian }} \
             dist/sing-box=/usr/bin/sing-box
-          rm -rf $HOME/.gnupg
-          gpg --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" --import <<EOF
-          ${{ secrets.GPG_KEY }}
-          EOF
-          debsigs --sign=origin -k ${{ secrets.GPG_KEY_ID }} --gpgopts '--pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}"' dist/*.deb
+          set +x
+          SIGNING_PASSPHRASE_FILE=$(mktemp "$RUNNER_TEMP/gpg-passphrase.XXXXXX")
+          trap 'rm -f "$SIGNING_PASSPHRASE_FILE"' EXIT
+          printf '%s' "$GPG_PASSPHRASE" > "$SIGNING_PASSPHRASE_FILE"
+          printf '%s' "$GPG_KEY" | gpg --batch --pinentry-mode loopback --passphrase-file "$SIGNING_PASSPHRASE_FILE" --import
+          debsigs --sign=origin -k "$GPG_KEY_ID" --gpgopts "--batch --pinentry-mode loopback --passphrase-file $SIGNING_PASSPHRASE_FILE" dist/*.deb
+        env:
+          GPG_KEY: ${{ secrets.GPG_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       - name: Package RPM
         if: matrix.rpm != ''
         run: |-
@@ -201,20 +206,26 @@ jobs:
             -p "dist/${NAME}_${{ needs.calculate_version.outputs.version }}_linux_${{ matrix.rpm }}.rpm" \
             --architecture ${{ matrix.rpm }} \
             dist/sing-box=/usr/bin/sing-box
-          cat > $HOME/.rpmmacros <<EOF
-          %_gpg_name ${{ secrets.GPG_KEY_ID }}
-          %_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase ${{ secrets.GPG_PASSPHRASE }}
+          set +x
+          SIGNING_PASSPHRASE_FILE=$(mktemp "$RUNNER_TEMP/gpg-passphrase.XXXXXX")
+          trap 'rm -f "$SIGNING_PASSPHRASE_FILE"' EXIT
+          printf '%s' "$GPG_PASSPHRASE" > "$SIGNING_PASSPHRASE_FILE"
+          cat > "$HOME/.rpmmacros" <<EOF
+          %_gpg_name $GPG_KEY_ID
+          %_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase-file $SIGNING_PASSPHRASE_FILE
           EOF
-          gpg --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" --import <<EOF
-          ${{ secrets.GPG_KEY }}
-          EOF
+          printf '%s' "$GPG_KEY" | gpg --batch --pinentry-mode loopback --passphrase-file "$SIGNING_PASSPHRASE_FILE" --import
           rpmsign --addsign dist/*.rpm
+        env:
+          GPG_KEY: ${{ secrets.GPG_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       - name: Cleanup
         run: rm dist/sing-box
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: binary-${{ matrix.os }}_${{ matrix.arch }}${{ matrix.goarm && format('v{0}', matrix.goarm) }}${{ matrix.legacy_go && '-legacy' || '' }}
+          name: binary-${{ matrix.os }}_${{ matrix.arch }}${{ matrix.goarm && format('v{0}', matrix.goarm) }}
           path: "dist"
   upload:
     name: Upload builds
