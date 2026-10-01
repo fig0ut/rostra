@@ -7,6 +7,7 @@ import (
 
 	"github.com/sagernet/sing-box/adapter"
 	"github.com/sagernet/sing-box/adapter/inbound"
+	"github.com/sagernet/sing-box/common/badsocks"
 	"github.com/sagernet/sing-box/common/listener"
 	"github.com/sagernet/sing-box/common/tls"
 	"github.com/sagernet/sing-box/common/uot"
@@ -129,7 +130,7 @@ func (h *Inbound) NewConnection(ctx context.Context, conn net.Conn, metadata ada
 	handler := adapter.NewUpstreamHandler(metadata, h.newUserConnection, h.streamUserPacketConnection)
 	switch headerBytes[0] {
 	case socks4.Version, socks5.Version:
-		err = socks.HandleConnectionEx(ctx, conn, reader.Reader, h.authenticator, handler, h.listener, h.udpTimeout, metadata.Source, onClose)
+		err = socks.HandleConnectionEx(ctx, conn, reader.Reader, h.authenticator, badsocks.NewBufferedHandler(reader.Reader, handler), h.listener, h.udpTimeout, metadata.Source, onClose)
 		if err != nil {
 			N.CloseOnHandshakeFailure(conn, onClose, err)
 			if E.IsClosedOrCanceled(err) {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/sagernet/sing-box/adapter"
 	"github.com/sagernet/sing-box/adapter/inbound"
+	"github.com/sagernet/sing-box/common/badsocks"
 	"github.com/sagernet/sing-box/common/listener"
 	"github.com/sagernet/sing-box/common/uot"
 	C "github.com/sagernet/sing-box/constant"
@@ -73,7 +74,9 @@ func (h *Inbound) Start(stage adapter.StartStage, scope *adapter.Scope) error {
 }
 
 func (h *Inbound) NewConnection(ctx context.Context, conn net.Conn, metadata adapter.InboundContext, onClose N.CloseHandlerFunc) {
-	err := socks.HandleConnectionEx(ctx, conn, std_bufio.NewReader(conn), h.authenticator, adapter.NewUpstreamHandler(metadata, h.newUserConnection, h.streamUserPacketConnection), h.listener, h.udpTimeout, metadata.Source, onClose)
+	reader := std_bufio.NewReader(conn)
+	handler := badsocks.NewBufferedHandler(reader, adapter.NewUpstreamHandler(metadata, h.newUserConnection, h.streamUserPacketConnection))
+	err := socks.HandleConnectionEx(ctx, conn, reader, h.authenticator, handler, h.listener, h.udpTimeout, metadata.Source, onClose)
 	N.CloseOnHandshakeFailure(conn, onClose, err)
 	if err != nil {
 		if E.IsClosedOrCanceled(err) {
