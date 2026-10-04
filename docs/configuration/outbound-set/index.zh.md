@@ -1,7 +1,8 @@
 # 出站集合
 
 出站集合包含可供[选择器](/zh/configuration/outbound/selector/)和
-[URLTest](/zh/configuration/outbound/urltest/) 出站共享的出站定义。
+[URLTest](/zh/configuration/outbound/urltest/) 和
+[LoadBalance](/zh/configuration/outbound/loadbalance/) 出站共享的出站定义。
 
 在顶层 `outbound_set` 字段中配置出站集合。
 
@@ -103,7 +104,7 @@
 
 非空的[出站](/zh/configuration/outbound/)定义列表。
 
-每个出站必须有唯一且非空的 `tag`。不支持将选择器和 URLTest 出站作为成员。
+每个出站必须有唯一且非空的 `tag`。不支持将选择器、URLTest 和 LoadBalance 出站作为成员。
 
 ### 本地或远程字段
 
@@ -177,7 +178,7 @@
 更新仅在成员、覆盖配置和依赖通过验证，并且新代理成功启动后应用。
 更新失败时保留正在运行的集合及其缓存源。
 
-选择器和 URLTest 的成员随集合刷新。若选择器当前选中的标签仍然存在，则保留该选择；
+选择器、URLTest 和 LoadBalance 的成员随集合刷新。若选择器当前选中的标签仍然存在，则保留该选择；
 否则使用配置的 `default`（若仍可用），再回退到第一个成员。
 初次加载配置时，默认成员不存在将报错；运行时刷新允许默认成员消失。
 

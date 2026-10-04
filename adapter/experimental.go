@@ -156,8 +156,27 @@ type OutboundGroup interface {
 	AttachConnection(closer io.Closer) (detach func())
 }
 
+// ConnectionSelectingOutboundGroup chooses once for a new connection. Selected
+// remains a read-only inspection method and may return nil for these groups.
+type ConnectionSelectingOutboundGroup interface {
+	OutboundGroup
+	SelectForConnection(metadata *InboundContext) (Outbound, error)
+}
+
 type URLTestGroup interface {
 	OutboundGroup
 	URLTest(ctx context.Context) (map[string]uint16, error)
 	PerformUpdateCheck()
+}
+
+// OutboundGroupUpdater accepts an ordered membership snapshot.
+type OutboundGroupUpdater interface {
+	UpdateOutbounds([]Outbound)
+}
+
+// OutboundGroupChangeUpdater also receives tags whose underlying instances were
+// replaced, even if the stable outbound handles have not changed.
+type OutboundGroupChangeUpdater interface {
+	OutboundGroupUpdater
+	UpdateOutboundsWithChanges([]Outbound, []string)
 }

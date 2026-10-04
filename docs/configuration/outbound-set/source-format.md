@@ -21,7 +21,7 @@ Version of outbound-set. Only `1` is supported.
 
 Nonempty list of [Outbound](/configuration/outbound/) definitions.
 
-Each outbound must have a unique, nonempty `tag`. Selector and URLTest outbounds are not supported as members.
+Each outbound must have a unique, nonempty `tag`. Selector, URLTest, and LoadBalance outbounds are not supported as members.
 
 Members are registered with a set prefix. See [Member tags](../#member-tags) for details.
 

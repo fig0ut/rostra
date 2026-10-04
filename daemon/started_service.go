@@ -611,6 +611,10 @@ func (s *StartedService) readGroups() *Groups {
 			}
 		}
 
+		var balanceHealth map[string]group.LoadBalanceHealth
+		if balance, ok := iGroup.(*group.LoadBalance); ok {
+			balanceHealth = balance.Health()
+		}
 		for _, itemTag := range iGroup.All() {
 			itemOutbound, isLoaded := boxService.outboundManager.Outbound(itemTag)
 			if !isLoaded {
@@ -620,7 +624,15 @@ func (s *StartedService) readGroups() *Groups {
 			var item GroupItem
 			item.Tag = itemTag
 			item.Type = itemOutbound.Type()
-			if history := historyStorage.LoadURLTestHistory(group.RealTag(itemOutbound, N.NetworkTCP)); history != nil {
+			if balanceHealth != nil {
+				health := balanceHealth[itemTag]
+				if !health.CheckedAt.IsZero() {
+					item.UrlTestTime = health.CheckedAt.Unix()
+				}
+				if health.Status == "healthy" {
+					item.UrlTestDelay = int32(health.Delay)
+				}
+			} else if history := historyStorage.LoadURLTestHistory(group.RealTag(itemOutbound, N.NetworkTCP)); history != nil {
 				item.UrlTestTime = history.Time.Unix()
 				item.UrlTestDelay = int32(history.Delay)
 			}
@@ -732,6 +744,8 @@ func (s *StartedService) URLTest(ctx context.Context, request *URLTestRequest) (
 	outboundGroup, isOutboundGroup := outbound.(adapter.OutboundGroup)
 	if isURLTest {
 		go urlTest.CheckOutbounds()
+	} else if balance, isBalance := outbound.(*group.LoadBalance); isBalance {
+		balance.PerformUpdateCheck()
 	} else if isOutboundGroup {
 		outbounds := common.FilterNotNil(common.Map(outboundGroup.All(), func(it string) adapter.Outbound {
 			itOutbound, _ := boxService.outboundManager.Outbound(it)

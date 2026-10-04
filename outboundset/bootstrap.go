@@ -57,6 +57,10 @@ func bootstrapOptions(options option.Options, client option.HTTPClientOptions) (
 				if len(group.OutboundSet) > 0 {
 					return E.New("download depends on outbound-set group: ", tag, "; provide cache or initial_path")
 				}
+			case *option.LoadBalanceOutboundOptions:
+				if len(group.OutboundSet) > 0 {
+					return E.New("download depends on outbound-set group: ", tag, "; provide cache or initial_path")
+				}
 			}
 			for _, dependency := range referencedOutbounds(value.Options) {
 				if err := add(dependency); err != nil {
