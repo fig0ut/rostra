@@ -334,3 +334,79 @@ func TestCloseCancelsOutboundSetRefresh(t *testing.T) {
 	require.Error(t, <-refreshed)
 	require.ErrorIs(t, service.PtrFromContext[outboundset.Manager](ctx).Refresh(context.Background(), "set"), os.ErrClosed)
 }
+
+func TestLoadBalanceRuntimeRefresh(t *testing.T) {
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "ok") }))
+	defer target.Close()
+	exitA, requestsA := startHTTPProxy(t)
+	exitB, requestsB := startHTTPProxy(t)
+	var content atomic.Value
+	content.Store(`{"version":1,"outbounds":[` + proxyDefinition("one", exitA) + `,` + proxyDefinition("two", exitB) + `]}`)
+	source := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, content.Load().(string)) }))
+	defer source.Close()
+	ctx, options := parse(t, fmt.Sprintf(`{
+ "log":{"disabled":true},"dns":{"servers":[{"type":"hosts","tag":"hosts"}]},
+ "outbound_set":[{"type":"remote","tag":"set","url":%q,"format":"source"}],
+ "outbounds":[
+ {"type":"selector","tag":"select","outbounds":["balance"]},
+ {"type":"urltest","tag":"auto","outbounds":["balance"],"url":%q},
+ {"type":"loadbalance","tag":"balance","strategy":"round_robin","outbound_set":"set","url":%q},
+ {"type":"loadbalance","tag":"outer","outbounds":["select"],"url":%q}
+ ]}`, source.URL, target.URL, target.URL, target.URL))
+	instance, err := box.New(box.Options{Context: ctx, Options: options})
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, instance.Close()) })
+	require.NoError(t, instance.PreStart())
+	raw, _ := instance.Outbound().Outbound("balance")
+	balance := raw.(*group.LoadBalance)
+	selector, _ := instance.Outbound().Outbound("select")
+	destination := M.ParseSocksaddr(target.Listener.Addr().String())
+	// A nested selector delegates each dial to the balancer. The first connection
+	// stays on exit A even after its member is replaced by exit B.
+	held, err := selector.DialContext(context.Background(), "tcp", destination)
+	require.NoError(t, err)
+	defer held.Close()
+	expectProxyDestination(t, requestsA, destination.String())
+	conn, err := selector.DialContext(context.Background(), "tcp", destination)
+	require.NoError(t, err)
+	expectProxyDestination(t, requestsB, destination.String())
+	finishHTTPRequest(t, conn, target)
+	_, err = balance.URLTest(context.Background())
+	require.NoError(t, err)
+	expectProxyDestination(t, requestsA, destination.String())
+	expectProxyDestination(t, requestsB, destination.String())
+	outerRaw, _ := instance.Outbound().Outbound("outer")
+	outer := outerRaw.(*group.LoadBalance)
+	_, err = outer.URLTest(context.Background())
+	require.NoError(t, err)
+	expectProxyDestination(t, requestsA, destination.String())
+	require.Equal(t, "healthy", outer.Health()["select"].Status)
+	unchanged := balance.Health()["set/two"]
+	require.Equal(t, "healthy", unchanged.Status)
+	content.Store(`{"version":1,"outbounds":[` + proxyDefinition("two", exitB) + `,` + proxyDefinition("one", exitB) + `]}`)
+	manager := service.PtrFromContext[outboundset.Manager](ctx)
+	require.NoError(t, manager.Refresh(context.Background(), "set"))
+	require.Equal(t, []string{"set/two", "set/one"}, balance.All())
+	require.Equal(t, unchanged, balance.Health()["set/two"])
+	require.Equal(t, "unknown", balance.Health()["set/one"].Status)
+	require.Equal(t, "unknown", outer.Health()["select"].Status, "changes below nested groups must invalidate their health")
+	finishHTTPRequest(t, held, target)
+	for range 2 {
+		conn, err = balance.DialContext(context.Background(), "tcp", destination)
+		require.NoError(t, err)
+		expectProxyDestination(t, requestsB, destination.String())
+		finishHTTPRequest(t, conn, target)
+	}
+	auto, _ := instance.Outbound().Outbound("auto")
+	result, err := auto.(*group.URLTest).URLTest(context.Background())
+	require.NoError(t, err)
+	require.Contains(t, result, "balance")
+	expectProxyDestination(t, requestsB, destination.String())
+	_, err = outer.URLTest(context.Background())
+	require.NoError(t, err)
+	expectProxyDestination(t, requestsB, destination.String())
+	require.Equal(t, "healthy", outer.Health()["select"].Status)
+	content.Store(`{"version":1,"outbounds":[` + proxyDefinition("two", exitB) + `]}`)
+	require.NoError(t, manager.Refresh(context.Background(), "set"))
+	require.Equal(t, "unknown", outer.Health()["select"].Status, "removal must propagate through the previous dependency graph")
+}
