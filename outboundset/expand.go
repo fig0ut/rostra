@@ -62,6 +62,8 @@ func PrepareWithDownloader(ctx context.Context, log logger.ContextLogger, option
 			references = group.OutboundSet
 		case *option.URLTestOutboundOptions:
 			references = group.OutboundSet
+		case *option.LoadBalanceOutboundOptions:
+			references = group.OutboundSet
 		}
 		for _, tag := range references {
 			if _, exists := sets[tag]; !exists {
@@ -185,6 +187,14 @@ func expandLoaded(options option.Options, loaded map[string][]option.Outbound, s
 				return option.Options{}, E.New("urltest[", outbound.Tag, "]: missing outbounds")
 			}
 			result.Outbounds[i].Options = &cloned
+		case *option.LoadBalanceOutboundOptions:
+			cloned := *group
+			cloned.Outbounds = expandTags(group.Outbounds, group.OutboundSet)
+			cloned.OutboundSet = nil
+			if len(cloned.Outbounds) == 0 {
+				return option.Options{}, E.New("loadbalance[", outbound.Tag, "]: missing outbounds")
+			}
+			result.Outbounds[i].Options = &cloned
 		}
 	}
 	if err := validateDependencies(result); err != nil {
@@ -233,7 +243,7 @@ func decodeMembers(ctx context.Context, set option.OutboundSet, tag string, defi
 			return nil, E.Cause(err, "member[", names[i], "]")
 		}
 		switch outbounds[i].Type {
-		case C.TypeSelector, C.TypeURLTest:
+		case C.TypeSelector, C.TypeURLTest, C.TypeLoadBalance:
 			return nil, E.New("member[", names[i], "]: outbound sets contain leaf outbounds, not groups")
 		}
 	}
@@ -285,6 +295,8 @@ func validateDependencies(options option.Options) error {
 		case *option.SelectorOutboundOptions:
 			dependencies = append(dependencies, group.Outbounds...)
 		case *option.URLTestOutboundOptions:
+			dependencies = append(dependencies, group.Outbounds...)
+		case *option.LoadBalanceOutboundOptions:
 			dependencies = append(dependencies, group.Outbounds...)
 		}
 		nodes[tag] = dependencies

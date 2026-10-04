@@ -201,6 +201,10 @@ func (l *loader) bootstrapOptions() option.Options {
 			clone := *group
 			clone.Outbounds, clone.OutboundSet = expand(group.Outbounds, group.OutboundSet)
 			result.Outbounds[i].Options = &clone
+		case *option.LoadBalanceOutboundOptions:
+			clone := *group
+			clone.Outbounds, clone.OutboundSet = expand(group.Outbounds, group.OutboundSet)
+			result.Outbounds[i].Options = &clone
 		}
 	}
 	for _, set := range result.OutboundSet {

@@ -306,7 +306,7 @@ func (m *Manager) Refresh(ctx context.Context, tag string) error {
 		}
 	}
 	type groupUpdate struct {
-		group   interface{ UpdateOutbounds([]adapter.Outbound) }
+		group   adapter.OutboundGroupUpdater
 		members []adapter.Outbound
 	}
 	var groups []groupUpdate
@@ -317,6 +317,8 @@ func (m *Manager) Refresh(ctx context.Context, tag string) error {
 			tags = options.Outbounds
 		case *option.URLTestOutboundOptions:
 			tags = options.Outbounds
+		case *option.LoadBalanceOutboundOptions:
+			tags = options.Outbounds
 		default:
 			continue
 		}
@@ -325,7 +327,7 @@ func (m *Manager) Refresh(ctx context.Context, tag string) error {
 			name = strconv.Itoa(i)
 		}
 		raw, _ := m.outbound.Outbound(name)
-		group, ok := raw.(interface{ UpdateOutbounds([]adapter.Outbound) })
+		group, ok := raw.(adapter.OutboundGroupUpdater)
 		if !ok {
 			g.close()
 			return E.New("outbound group cannot update: ", name)
@@ -343,6 +345,45 @@ func (m *Manager) Refresh(ctx context.Context, tag string) error {
 	}
 	previous := m.current
 	history := service.PtrFromContext[urltest.HistoryStorage](m.baseContext)
+	// A static group or detour can keep its identity while a dependency changes.
+	// Include transitive dependents so their cached health is invalidated too.
+	dependents := make(map[string][]string)
+	// Include old edges as well: removed members disappear from the new graph.
+	for _, definitions := range [][]option.Outbound{
+		m.expanded.Outbounds[:len(m.options.Outbounds)],
+		expanded.Outbounds[:len(m.options.Outbounds)],
+	} {
+		for i, definition := range definitions {
+			name := definition.Tag
+			if name == "" {
+				name = strconv.Itoa(i)
+			}
+			for _, dependency := range referencedOutbounds(definition.Options) {
+				dependents[dependency] = append(dependents[dependency], name)
+			}
+		}
+	}
+	changedSet := make(map[string]bool)
+	var changed []string
+	markChanged := func(name string) {
+		if !changedSet[name] {
+			changedSet[name] = true
+			changed = append(changed, name)
+		}
+	}
+	for name, value := range g.members {
+		if previous.members[name] != value {
+			markChanged(name)
+		}
+	}
+	for _, name := range removed {
+		markChanged(name)
+	}
+	for i := 0; i < len(changed); i++ {
+		for _, name := range dependents[changed[i]] {
+			markChanged(name)
+		}
+	}
 	m.outbound.Publish(replacements, removed, func() {
 		m.currentAccess.Lock()
 		m.current = g
@@ -355,7 +396,11 @@ func (m *Manager) Refresh(ctx context.Context, tag string) error {
 			}
 		}
 		for _, update := range groups {
-			update.group.UpdateOutbounds(update.members)
+			if aware, ok := update.group.(adapter.OutboundGroupChangeUpdater); ok {
+				aware.UpdateOutboundsWithChanges(update.members, changed)
+			} else {
+				update.group.UpdateOutbounds(update.members)
+			}
 		}
 	})
 	// ReferenceManager caches policy by stable handle identity. Reapply that
