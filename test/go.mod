@@ -213,3 +213,5 @@ require (
 	lukechampine.com/blake3 v1.3.0 // indirect
 	zombiezen.com/go/capnproto2 v2.18.2+incompatible // indirect
 )
+
+replace github.com/metacubex/utls => github.com/fig0ut/utls v1.8.9-0.20261006130402-9ed601a2b08f

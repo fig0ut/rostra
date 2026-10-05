@@ -8966,6 +8966,9 @@
         },
         "max_time_difference": {
           "$ref": "#/$defs/Duration"
+        },
+        "mldsa65_seed": {
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -14926,6 +14929,9 @@
           "type": "string"
         },
         "short_id": {
+          "type": "string"
+        },
+        "mldsa65_verify": {
           "type": "string"
         }
       },
