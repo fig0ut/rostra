@@ -65,7 +65,7 @@ func NewService(options ServiceOptions) (*Service, error) {
 
 func (s *Service) start(bridgeName string) error {
 	s.tunName = tun.CalculateInterfaceName(bridgeName)
-	s.nftTableName = "sing-box-" + s.tunName
+	s.nftTableName = "rostra-" + s.tunName
 	tunFileDescriptor, err := openTUN(s.tunName, true)
 	if err != nil {
 		return E.Cause(err, "create bridge tun")

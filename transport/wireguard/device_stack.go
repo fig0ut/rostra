@@ -150,7 +150,7 @@ func (w *stackDevice) MTU() (int, error) {
 }
 
 func (w *stackDevice) Name() (string, error) {
-	return "sing-box", nil
+	return "rostra", nil
 }
 
 func (w *stackDevice) Events() <-chan wgTun.Event {

@@ -153,7 +153,7 @@ Trojan is the most commonly used TLS proxy made in China. It can be used in vari
 
     !!! info "Tip"
         
-        Use `sing-box merge` command to merge configuration and certificate into one file.
+        Use `rostra merge` command to merge configuration and certificate into one file.
 
     ```json
     {

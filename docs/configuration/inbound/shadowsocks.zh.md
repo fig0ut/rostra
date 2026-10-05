@@ -84,7 +84,7 @@
 | 方法            | 密码格式                                     |
 |---------------|------------------------------------------|
 | none          | /                                        |
-| 2022 methods  | `sing-box generate rand --base64 <密钥长度>` |
+| 2022 methods  | `rostra generate rand --base64 <密钥长度>` |
 | other methods | 任意字符串                                    |
 
 #### managed

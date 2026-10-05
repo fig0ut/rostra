@@ -4,7 +4,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/sagernet/sing-box/daemon"
+	"github.com/fig0ut/rostra/daemon"
+
 	E "github.com/sagernet/sing/common/exceptions"
 
 	"google.golang.org/grpc/codes"

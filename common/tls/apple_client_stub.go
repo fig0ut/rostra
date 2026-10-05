@@ -5,7 +5,8 @@ package tls
 import (
 	"context"
 
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/option"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"
 )

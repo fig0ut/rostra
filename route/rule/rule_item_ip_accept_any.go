@@ -1,7 +1,7 @@
 package rule
 
 import (
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
 )
 
 var _ RuleItem = (*IPAcceptAnyItem)(nil)

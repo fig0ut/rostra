@@ -5,12 +5,13 @@ package resolved
 import (
 	"context"
 
-	"github.com/sagernet/sing-box/adapter"
-	boxService "github.com/sagernet/sing-box/adapter/service"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/dns"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/adapter"
+	boxService "github.com/fig0ut/rostra/adapter/service"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/dns"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+
 	E "github.com/sagernet/sing/common/exceptions"
 )
 

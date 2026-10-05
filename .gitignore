@@ -6,8 +6,8 @@
 /site/
 /bin/
 /dist/
-/sing-box
-/sing-box.exe
+/rostra
+/rostra.exe
 /build/
 /*.jar
 /*.aar

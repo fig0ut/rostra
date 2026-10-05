@@ -8,7 +8,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
+
 	"github.com/sagernet/sing-usbip"
 	"github.com/sagernet/sing/common"
 	E "github.com/sagernet/sing/common/exceptions"

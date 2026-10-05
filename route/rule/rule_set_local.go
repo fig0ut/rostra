@@ -7,11 +7,12 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/common/srs"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/fswatch"
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/common/srs"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/option"
 	"github.com/sagernet/sing/common"
 	E "github.com/sagernet/sing/common/exceptions"
 	F "github.com/sagernet/sing/common/format"

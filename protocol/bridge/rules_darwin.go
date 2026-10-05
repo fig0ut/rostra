@@ -253,7 +253,7 @@ func pfReplyToRule(tunName string, egress string, port netip.Addr) pfAnchorRule 
 }
 
 func bridgeTagName(tunName string) string {
-	return "sing-box-" + tunName
+	return "rostra-" + tunName
 }
 
 // Assigning the port as the utun's point-to-point destination makes the kernel

@@ -38,24 +38,24 @@ prepare_apk_root
 trap 'rm -rf "$ROOT_DIR" "$APK_ROOT_DIR"' EXIT
 
 # Binary
-install -Dm755 "$BINARY_PATH" "$ROOT_DIR/usr/bin/sing-box"
+install -Dm755 "$BINARY_PATH" "$ROOT_DIR/usr/bin/rostra"
 
 # Config files
-install -Dm644 "$PROJECT/release/config/config.json" "$ROOT_DIR/etc/sing-box/config.json"
-install -Dm755 "$PROJECT/release/config/sing-box.initd" "$ROOT_DIR/etc/init.d/sing-box"
-install -Dm644 "$PROJECT/release/config/sing-box.confd" "$ROOT_DIR/etc/conf.d/sing-box"
+install -Dm644 "$PROJECT/release/config/config.json" "$ROOT_DIR/etc/rostra/config.json"
+install -Dm755 "$PROJECT/release/config/rostra.initd" "$ROOT_DIR/etc/init.d/rostra"
+install -Dm644 "$PROJECT/release/config/rostra.confd" "$ROOT_DIR/etc/conf.d/rostra"
 
 # Service files
-install -Dm644 "$PROJECT/release/config/sing-box.service" "$ROOT_DIR/usr/lib/systemd/system/sing-box.service"
-install -Dm644 "$PROJECT/release/config/sing-box@.service" "$ROOT_DIR/usr/lib/systemd/system/sing-box@.service"
+install -Dm644 "$PROJECT/release/config/rostra.service" "$ROOT_DIR/usr/lib/systemd/system/rostra.service"
+install -Dm644 "$PROJECT/release/config/rostra@.service" "$ROOT_DIR/usr/lib/systemd/system/rostra@.service"
 
 # Completions
-install -Dm644 "$PROJECT/release/completions/sing-box.bash" "$ROOT_DIR/usr/share/bash-completion/completions/sing-box.bash"
-install -Dm644 "$PROJECT/release/completions/sing-box.fish" "$ROOT_DIR/usr/share/fish/vendor_completions.d/sing-box.fish"
-install -Dm644 "$PROJECT/release/completions/sing-box.zsh" "$ROOT_DIR/usr/share/zsh/site-functions/_sing-box"
+install -Dm644 "$PROJECT/release/completions/rostra.bash" "$ROOT_DIR/usr/share/bash-completion/completions/rostra.bash"
+install -Dm644 "$PROJECT/release/completions/rostra.fish" "$ROOT_DIR/usr/share/fish/vendor_completions.d/rostra.fish"
+install -Dm644 "$PROJECT/release/completions/rostra.zsh" "$ROOT_DIR/usr/share/zsh/site-functions/_rostra"
 
 # License
-install -Dm644 "$PROJECT/LICENSE" "$ROOT_DIR/usr/share/licenses/sing-box/LICENSE"
+install -Dm644 "$PROJECT/LICENSE" "$ROOT_DIR/usr/share/licenses/rostra/LICENSE"
 
 # APK metadata
 PACKAGES_DIR="$ROOT_DIR/lib/apk/packages"
@@ -63,9 +63,9 @@ mkdir -p "$PACKAGES_DIR"
 
 # .conffiles
 cat > "$PACKAGES_DIR/.conffiles" <<'EOF'
-/etc/conf.d/sing-box
-/etc/init.d/sing-box
-/etc/sing-box/config.json
+/etc/conf.d/rostra
+/etc/init.d/rostra
+/etc/rostra/config.json
 EOF
 
 # .conffiles_static (sha256 checksums)
@@ -82,13 +82,13 @@ done < "$PACKAGES_DIR/.conffiles" > "$PACKAGES_DIR/.conffiles_static"
 
 # Build APK
 apk --root "$APK_ROOT_DIR" mkpkg \
-  --info "name:sing-box" \
+  --info "name:rostra" \
   --info "version:${APK_VERSION}" \
   --info "description:The universal proxy platform." \
   --info "arch:${ARCHITECTURE}" \
   --info "license:GPL-3.0-or-later with name use or association addition" \
-  --info "origin:sing-box" \
-  --info "url:https://sing-box.sagernet.org/" \
-  --info "maintainer:nekohasekai <contact-git@sekai.icu>" \
+  --info "origin:rostra" \
+  --info "url:https://github.com/fig0ut/rostra" \
+  --info "maintainer:fig0ut" \
   --files "$ROOT_DIR" \
   --output "$OUTPUT_PATH"

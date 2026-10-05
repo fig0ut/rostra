@@ -2,6 +2,8 @@
 icon: material/android
 ---
 
+> This page describes upstream sing-box projects and services, not Rostra releases or endorsements.
+
 # sing-box for Android
 
 SFA allows users to manage and run local or remote sing-box configuration files, and provides

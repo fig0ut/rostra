@@ -13,11 +13,12 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/sagernet/sing-box/include"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
-	"github.com/sagernet/sing-box/outboundset"
-	"github.com/sagernet/sing-box/schema"
+	"github.com/fig0ut/rostra/include"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+	"github.com/fig0ut/rostra/outboundset"
+	"github.com/fig0ut/rostra/schema"
+
 	"github.com/sagernet/sing/common/json"
 	"github.com/sagernet/sing/service/filemanager"
 

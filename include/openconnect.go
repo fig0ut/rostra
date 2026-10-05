@@ -3,9 +3,9 @@
 package include
 
 import (
-	"github.com/sagernet/sing-box/adapter/endpoint"
-	"github.com/sagernet/sing-box/dns"
-	"github.com/sagernet/sing-box/protocol/openconnect"
+	"github.com/fig0ut/rostra/adapter/endpoint"
+	"github.com/fig0ut/rostra/dns"
+	"github.com/fig0ut/rostra/protocol/openconnect"
 )
 
 func registerOpenConnectEndpoint(registry *endpoint.Registry) {

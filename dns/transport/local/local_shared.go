@@ -3,11 +3,12 @@ package local
 import (
 	"context"
 
-	"github.com/sagernet/sing-box/adapter"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/dns"
-	"github.com/sagernet/sing-box/dns/transport"
-	"github.com/sagernet/sing-box/dns/transport/local/systemconfig"
+	"github.com/fig0ut/rostra/adapter"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/dns"
+	"github.com/fig0ut/rostra/dns/transport"
+	"github.com/fig0ut/rostra/dns/transport/local/systemconfig"
+
 	E "github.com/sagernet/sing/common/exceptions"
 
 	mDNS "github.com/miekg/dns"

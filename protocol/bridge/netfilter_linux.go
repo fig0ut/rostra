@@ -651,7 +651,7 @@ func fullConeSupported() bool {
 	return fullConeProbeResult
 }
 
-const fullConeProbeTable = "sing-box-fullcone-probe"
+const fullConeProbeTable = "rostra-fullcone-probe"
 
 // The kernel loads and validates the expression's module when the batch commits:
 // a clean flush means the verb is available, a rejected one rolls back atomically.
@@ -677,7 +677,7 @@ func probeFullCone() bool {
 		Chain: chain,
 		Exprs: []expr.Any{
 			&expr.Meta{Key: expr.MetaKeyOIFNAME, Register: 1},
-			&expr.Cmp{Op: expr.CmpOpEq, Register: 1, Data: nftIfname("sing-box-probe0")},
+			&expr.Cmp{Op: expr.CmpOpEq, Register: 1, Data: nftIfname("rostra-probe0")},
 			&expr.FullCone{},
 		},
 	})

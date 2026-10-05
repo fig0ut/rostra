@@ -9,8 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fig0ut/rostra/adapter"
+
 	"github.com/sagernet/fswatch"
-	"github.com/sagernet/sing-box/adapter"
 	"github.com/sagernet/sing/common/buf"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"

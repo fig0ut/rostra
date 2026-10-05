@@ -167,7 +167,7 @@ To use sing-box with the official program, you need to fill in that combination 
 
     !!! info "Tip"
         
-        Use `sing-box merge` command to merge configuration and certificate into one file.
+        Use `rostra merge` command to merge configuration and certificate into one file.
 
     ```json
     {

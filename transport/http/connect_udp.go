@@ -9,7 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sagernet/sing-box/transport/v2rayhttp"
+	"github.com/fig0ut/rostra/transport/v2rayhttp"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"

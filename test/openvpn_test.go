@@ -26,10 +26,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sagernet/sing-box"
-	"github.com/sagernet/sing-box/adapter"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra"
+	"github.com/fig0ut/rostra/adapter"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/option"
+
 	ovpn "github.com/sagernet/sing-openvpn"
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing-tun/gtcpip/header"
@@ -485,7 +486,8 @@ func TestOpenVPNDockerMSSFix(t *testing.T) {
 }
 
 func TestOpenVPNDockerCompressionNegotiation(t *testing.T) {
-	environment := startOpenVPNDockerOfficialServer(t, "compression-server",
+	environment := startOpenVPNDockerOfficialServer(
+		t, "compression-server",
 		"allow-compression no",
 		"compress stub",
 		"push \"compress stub\"",
@@ -1053,7 +1055,8 @@ func writeOpenVPNDockerServerConfig(t *testing.T, workspace string, openVPNPort 
 		"explicit-exit-notify 1",
 	}
 	configLines = append(configLines, serverDirectives...)
-	configLines = append(configLines,
+	configLines = append(
+		configLines,
 		"log /config/openvpn.log",
 		"",
 	)

@@ -225,7 +225,7 @@ const file_daemon_managed_service_proto_rawDesc = "" +
 	"\x14GetSystemProxyStatus\x12\x16.google.protobuf.Empty\x1a\x19.daemon.SystemProxyStatus\"\x00\x12W\n" +
 	"\x15SetSystemProxyEnabled\x12$.daemon.SetSystemProxyEnabledRequest\x1a\x16.google.protobuf.Empty\"\x00\x12H\n" +
 	"\x11TriggerDebugCrash\x12\x19.daemon.DebugCrashRequest\x1a\x16.google.protobuf.Empty\"\x00\x12D\n" +
-	"\x10TriggerOOMReport\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x00B%Z#github.com/sagernet/sing-box/daemonb\x06proto3"
+	"\x10TriggerOOMReport\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x00B!Z\x1fgithub.com/fig0ut/rostra/daemonb\x06proto3"
 
 var (
 	file_daemon_managed_service_proto_rawDescOnce sync.Once
@@ -250,7 +250,6 @@ var (
 		(*emptypb.Empty)(nil),                // 4: google.protobuf.Empty
 	}
 )
-
 var file_daemon_managed_service_proto_depIdxs = []int32{
 	0, // 0: daemon.DebugCrashRequest.type:type_name -> daemon.DebugCrashRequest.Type
 	4, // 1: daemon.ManagedService.StopService:input_type -> google.protobuf.Empty

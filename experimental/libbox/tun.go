@@ -4,7 +4,8 @@ import (
 	"net"
 	"net/netip"
 
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/option"
+
 	tun "github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing/common"
 )

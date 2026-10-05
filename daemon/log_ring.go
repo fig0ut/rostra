@@ -1,7 +1,7 @@
 package daemon
 
 import (
-	"github.com/sagernet/sing-box/log"
+	"github.com/fig0ut/rostra/log"
 )
 
 type logRing struct {

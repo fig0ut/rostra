@@ -5,7 +5,8 @@ package route
 import (
 	"os"
 
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
+
 	"github.com/sagernet/sing/common/logger"
 )
 

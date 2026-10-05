@@ -16,8 +16,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fig0ut/rostra/adapter"
+
 	gliderssh "github.com/sagernet/gliderssh"
-	"github.com/sagernet/sing-box/adapter"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/tailscale/sessionrecording"
 	"github.com/sagernet/tailscale/tailcfg"

@@ -6,8 +6,9 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/sagernet/sing-box/common/tls"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/common/tls"
+	"github.com/fig0ut/rostra/option"
+
 	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"
 

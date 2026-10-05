@@ -3,14 +3,15 @@ package v2ray
 import (
 	"context"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/common/tls"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/option"
-	"github.com/sagernet/sing-box/transport/v2rayhttp"
-	"github.com/sagernet/sing-box/transport/v2rayhttpupgrade"
-	"github.com/sagernet/sing-box/transport/v2raywebsocket"
-	"github.com/sagernet/sing-box/transport/v2rayxhttp"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/common/tls"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/option"
+	"github.com/fig0ut/rostra/transport/v2rayhttp"
+	"github.com/fig0ut/rostra/transport/v2rayhttpupgrade"
+	"github.com/fig0ut/rostra/transport/v2raywebsocket"
+	"github.com/fig0ut/rostra/transport/v2rayxhttp"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"
 	M "github.com/sagernet/sing/common/metadata"

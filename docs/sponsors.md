@@ -2,6 +2,8 @@
 icon: material/hand-coin
 ---
 
+> This page describes upstream sing-box projects and services, not Rostra releases or endorsements.
+
 # Sponsors
 
 Do you or your friends use sing-box?

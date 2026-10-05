@@ -5,8 +5,9 @@ import (
 	"net/netip"
 	"syscall"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/common/process"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/common/process"
+
 	N "github.com/sagernet/sing/common/network"
 )
 

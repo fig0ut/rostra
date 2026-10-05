@@ -2,9 +2,9 @@ module test
 
 go 1.25.5
 
-require github.com/sagernet/sing-box v0.0.0
+require github.com/fig0ut/rostra v0.0.0
 
-replace github.com/sagernet/sing-box => ../
+replace github.com/fig0ut/rostra => ../
 
 require (
 	github.com/coder/websocket v1.8.14

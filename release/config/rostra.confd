@@ -1,0 +1,6 @@
+# /etc/conf.d/rostra: config file for /etc/init.d/rostra
+
+# rostra configuration path, could be file or directory
+# ROSTRA_CONFIG=/etc/rostra
+
+# ROSTRA_WORKDIR=/var/lib/rostra

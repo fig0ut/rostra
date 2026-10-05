@@ -135,9 +135,9 @@ jobs:
         run: |
           set -xeuo pipefail
           mkdir -p dist
-          go build -v -trimpath -o dist/sing-box -tags "${BUILD_TAGS}" \
-          -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
-          ./cmd/sing-box
+          go build -v -trimpath -o dist/rostra -tags "${BUILD_TAGS}" \
+          -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
+          ./cmd/rostra
         env:
           CGO_ENABLED: "1"
           GOOS: linux
@@ -151,9 +151,9 @@ jobs:
         run: |
           set -xeuo pipefail
           mkdir -p dist
-          go build -v -trimpath -o dist/sing-box -tags "${BUILD_TAGS}" \
-          -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
-          ./cmd/sing-box
+          go build -v -trimpath -o dist/rostra -tags "${BUILD_TAGS}" \
+          -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
+          ./cmd/rostra
         env:
           CGO_ENABLED: "0"
           GOOS: ${{ matrix.os }}
@@ -162,7 +162,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Set mtime
         run: |-
-          TZ=UTC touch -t '197001010000' dist/sing-box
+          TZ=UTC touch -t '197001010000' dist/rostra
       - name: Detect track
         run: bash .github/detect_track.sh
       - name: Set version
@@ -182,7 +182,7 @@ jobs:
             -v "$PKG_VERSION" \
             -p "dist/${NAME}_${{ needs.calculate_version.outputs.version }}_linux_${{ matrix.debian }}.deb" \
             --architecture ${{ matrix.debian }} \
-            dist/sing-box=/usr/bin/sing-box
+            dist/rostra=/usr/bin/rostra
           set +x
           SIGNING_PASSPHRASE_FILE=$(mktemp "$RUNNER_TEMP/gpg-passphrase.XXXXXX")
           trap 'rm -f "$SIGNING_PASSPHRASE_FILE"' EXIT
@@ -205,7 +205,7 @@ jobs:
             -v "$PKG_VERSION" \
             -p "dist/${NAME}_${{ needs.calculate_version.outputs.version }}_linux_${{ matrix.rpm }}.rpm" \
             --architecture ${{ matrix.rpm }} \
-            dist/sing-box=/usr/bin/sing-box
+            dist/rostra=/usr/bin/rostra
           set +x
           SIGNING_PASSPHRASE_FILE=$(mktemp "$RUNNER_TEMP/gpg-passphrase.XXXXXX")
           trap 'rm -f "$SIGNING_PASSPHRASE_FILE"' EXIT
@@ -221,7 +221,7 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       - name: Cleanup
-        run: rm dist/sing-box
+        run: rm dist/rostra
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -249,6 +249,13 @@ jobs:
           path: dist
           merge-multiple: true
       - name: Publish packages
-        if: github.event_name != 'push'
+        if: github.event_name != 'push' && vars.FURY_ACCOUNT != ''
+        env:
+          FURY_ACCOUNT: ${{ vars.FURY_ACCOUNT }}
+          FURY_TOKEN: ${{ secrets.FURY_TOKEN }}
         run: |-
-          ls dist | xargs -I {} curl -F "package=@dist/{}" https://${{ secrets.FURY_TOKEN }}@push.fury.io/sagernet/
+          set -euo pipefail
+          for package in dist/*; do
+            curl --fail --show-error --user "${FURY_TOKEN}:" \
+              -F "package=@${package}" "https://push.fury.io/${FURY_ACCOUNT}/"
+          done

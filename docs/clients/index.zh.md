@@ -1,3 +1,5 @@
+> 本页介绍上游 sing-box 项目，不代表 Rostra 提供这些应用或服务。
+
 # :material-cellphone-link: 图形界面客户端
 
 由 Project S 维护，提供统一的体验与平台特定的功能。

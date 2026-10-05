@@ -8,10 +8,11 @@ import (
 	"slices"
 	"time"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/common/iponly"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-tun"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/common/iponly"
+	C "github.com/fig0ut/rostra/constant"
+
+	tun "github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing/common"
 	"github.com/sagernet/sing/common/bufio"
 	E "github.com/sagernet/sing/common/exceptions"

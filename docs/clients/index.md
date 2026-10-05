@@ -1,3 +1,5 @@
+> This page describes upstream sing-box projects and services, not Rostra releases or endorsements.
+
 # :material-cellphone-link: Graphical Clients
 
 Maintained by Project S to provide a unified experience and platform-specific functionality.

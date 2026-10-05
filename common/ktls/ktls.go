@@ -12,7 +12,8 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/sagernet/sing-box/common/badtls"
+	"github.com/fig0ut/rostra/common/badtls"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"
 	N "github.com/sagernet/sing/common/network"

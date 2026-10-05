@@ -3,7 +3,8 @@
 package networkquality
 
 import (
-	C "github.com/sagernet/sing-box/constant"
+	C "github.com/fig0ut/rostra/constant"
+
 	N "github.com/sagernet/sing/common/network"
 )
 

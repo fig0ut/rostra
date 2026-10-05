@@ -4,7 +4,8 @@ import (
 	"net/netip"
 	"syscall"
 
-	"github.com/sagernet/sing-box/experimental/libbox/internal/procfs"
+	"github.com/fig0ut/rostra/experimental/libbox/internal/procfs"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	N "github.com/sagernet/sing/common/network"
 )

@@ -5,8 +5,9 @@ import (
 	"net/netip"
 	"os"
 
+	"github.com/fig0ut/rostra/adapter"
+
 	"github.com/sagernet/bbolt"
-	"github.com/sagernet/sing-box/adapter"
 	"github.com/sagernet/sing/common/logger"
 	M "github.com/sagernet/sing/common/metadata"
 )

@@ -3,8 +3,9 @@ package rule
 import (
 	"strings"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/sing/common"
 )
 

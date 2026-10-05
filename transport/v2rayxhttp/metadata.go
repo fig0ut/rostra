@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/option"
 
 	"github.com/gofrs/uuid/v5"
 	"golang.org/x/net/http/httpguts"

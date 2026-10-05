@@ -2,7 +2,7 @@
 
 package tailssh
 
-import "github.com/sagernet/sing-box/adapter"
+import "github.com/fig0ut/rostra/adapter"
 
 func selectShellBackend(platformInterface adapter.PlatformInterface) shellBackend {
 	return &platformShellBackend{platform: platformInterface}

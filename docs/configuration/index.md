@@ -5,7 +5,7 @@ sing-box uses JSON for configuration files.
 
 ```json
 {
-  "$schema": "https://sing-box.sagernet.org/schema.json",
+  "$schema": "https://github.com/fig0ut/rostra/raw/HEAD/docs/schema.json",
   "log": {},
   "dns": {},
   "ntp": {},
@@ -46,17 +46,17 @@ sing-box uses JSON for configuration files.
 ### Check
 
 ```bash
-sing-box check
+rostra check
 ```
 
 ### Format
 
 ```bash
-sing-box format -w -c config.json -D config_directory
+rostra format -w -c config.json -D config_directory
 ```
 
 ### Merge
 
 ```bash
-sing-box merge output.json -c config.json -D config_directory
+rostra merge output.json -c config.json -D config_directory
 ```

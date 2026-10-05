@@ -8,7 +8,8 @@ import (
 	"slices"
 	"time"
 
-	"github.com/sagernet/sing-box/route"
+	"github.com/fig0ut/rostra/route"
+
 	E "github.com/sagernet/sing/common/exceptions"
 
 	"github.com/mdlayher/netlink"

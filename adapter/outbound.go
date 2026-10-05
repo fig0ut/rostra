@@ -4,8 +4,9 @@ import (
 	"context"
 	"net/netip"
 
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/sing-tun"
 	N "github.com/sagernet/sing/common/network"
 )

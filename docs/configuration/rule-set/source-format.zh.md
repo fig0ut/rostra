@@ -31,7 +31,7 @@ icon: material/new-box
 
 ### 编译
 
-使用 `sing-box rule-set compile [--output <file-name>.srs] <file-name>.json` 以编译源文件为二进制规则集。
+使用 `rostra rule-set compile [--output <file-name>.srs] <file-name>.json` 以编译源文件为二进制规则集。
 
 ### 字段
 

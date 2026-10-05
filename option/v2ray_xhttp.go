@@ -5,7 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sagernet/sing-box/schema"
+	"github.com/fig0ut/rostra/schema"
+
 	"github.com/sagernet/sing/common/json"
 )
 

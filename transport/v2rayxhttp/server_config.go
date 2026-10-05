@@ -7,7 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/option"
+
 	M "github.com/sagernet/sing/common/metadata"
 
 	"golang.org/x/net/http2/hpack"

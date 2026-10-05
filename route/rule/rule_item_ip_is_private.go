@@ -1,7 +1,8 @@
 package rule
 
 import (
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
+
 	N "github.com/sagernet/sing/common/network"
 )
 

@@ -36,7 +36,7 @@ icon: material/new-box
 
 私钥。
 
-使用 `sing-box generate tailcat-keypair` 生成。
+使用 `rostra generate tailcat-keypair` 生成。
 
 #### pre_shared_key
 

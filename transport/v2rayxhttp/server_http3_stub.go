@@ -5,7 +5,7 @@ package v2rayxhttp
 import (
 	"fmt"
 
-	"github.com/sagernet/sing-box/common/tls"
+	"github.com/fig0ut/rostra/common/tls"
 )
 
 func newHTTP3Server(_ *Server, _ tls.ServerConfig) (packetHTTPServer, error) {

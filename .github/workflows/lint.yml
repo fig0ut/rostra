@@ -6,7 +6,6 @@ on:
       - oldstable
       - stable
       - testing
-      - my-testing
       - unstable
     paths-ignore:
       - '**.md'
@@ -17,7 +16,6 @@ on:
       - oldstable
       - stable
       - testing
-      - my-testing
       - unstable
 
 concurrency:
