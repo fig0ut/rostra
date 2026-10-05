@@ -14,7 +14,11 @@ on:
         description: "The tag version you want to build"
 
 env:
-  REGISTRY_IMAGE: ghcr.io/sagernet/sing-box
+  REGISTRY_IMAGE: ghcr.io/cybervacation/rostra
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   build_binary:
@@ -118,9 +122,9 @@ jobs:
         if: matrix.naive
         run: |
           set -xeuo pipefail
-          go build -v -trimpath -o sing-box -tags "${BUILD_TAGS}" \
-          -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=${VERSION}' ${LDFLAGS_SHARED} -s -w -buildid=" \
-          ./cmd/sing-box
+          go build -v -trimpath -o rostra -tags "${BUILD_TAGS}" \
+          -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=${VERSION}' ${LDFLAGS_SHARED} -s -w -buildid=" \
+          ./cmd/rostra
         env:
           CGO_ENABLED: "1"
           GOOS: linux
@@ -131,9 +135,9 @@ jobs:
         if: ${{ ! matrix.naive }}
         run: |
           set -xeuo pipefail
-          go build -v -trimpath -o sing-box -tags "${BUILD_TAGS}" \
-          -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=${VERSION}' ${LDFLAGS_SHARED} -s -w -buildid=" \
-          ./cmd/sing-box
+          go build -v -trimpath -o rostra -tags "${BUILD_TAGS}" \
+          -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=${VERSION}' ${LDFLAGS_SHARED} -s -w -buildid=" \
+          ./cmd/rostra
         env:
           CGO_ENABLED: "0"
           GOOS: linux
@@ -144,11 +148,11 @@ jobs:
           platform=${{ matrix.docker_platform }}
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
           # Rename binary to include arch info for Dockerfile.binary
-          BINARY_NAME="sing-box-${{ matrix.arch }}"
+          BINARY_NAME="rostra-${{ matrix.arch }}"
           if [[ -n "${{ matrix.goarm }}" ]]; then
             BINARY_NAME="${BINARY_NAME}v${{ matrix.goarm }}"
           fi
-          mv sing-box "${BINARY_NAME}"
+          mv rostra "${BINARY_NAME}"
           echo "BINARY_NAME=${BINARY_NAME}" >> $GITHUB_ENV
       - name: Upload binary
         uses: actions/upload-artifact@v4
@@ -204,8 +208,8 @@ jobs:
       - name: Prepare binary
         run: |
           # Find and make the binary executable
-          chmod +x sing-box-*
-          ls -la sing-box-*
+          chmod +x rostra-*
+          ls -la rostra-*
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
       - name: Setup Docker Buildx

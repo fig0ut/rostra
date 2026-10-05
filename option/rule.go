@@ -4,8 +4,9 @@ import (
 	"context"
 	"reflect"
 
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/schema"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/schema"
+
 	"github.com/sagernet/sing/common"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/json"

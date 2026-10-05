@@ -4,7 +4,8 @@ import (
 	"context"
 	"net"
 
-	"github.com/sagernet/sing-box/common/ktls"
+	"github.com/fig0ut/rostra/common/ktls"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"
 	aTLS "github.com/sagernet/sing/common/tls"

@@ -9,9 +9,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/sagernet/sing-box/common/badhttp"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/transport/v2rayhttp"
+	"github.com/fig0ut/rostra/common/badhttp"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/transport/v2rayhttp"
+
 	"github.com/sagernet/sing/common/bufio"
 	E "github.com/sagernet/sing/common/exceptions"
 	M "github.com/sagernet/sing/common/metadata"

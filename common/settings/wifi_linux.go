@@ -3,7 +3,8 @@ package settings
 import (
 	"context"
 
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
+
 	E "github.com/sagernet/sing/common/exceptions"
 )
 

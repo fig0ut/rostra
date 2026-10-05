@@ -11,14 +11,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/adapter/outbound"
-	"github.com/sagernet/sing-box/common/urltest"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/adapter/outbound"
+	"github.com/fig0ut/rostra/common/urltest"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+
 	M "github.com/sagernet/sing/common/metadata"
 	"github.com/sagernet/sing/service"
 	"github.com/sagernet/sing/service/pause"
+
 	"github.com/stretchr/testify/require"
 )
 

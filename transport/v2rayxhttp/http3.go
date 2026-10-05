@@ -9,9 +9,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fig0ut/rostra/common/tls"
+
 	"github.com/sagernet/quic-go"
 	"github.com/sagernet/quic-go/http3"
-	"github.com/sagernet/sing-box/common/tls"
 	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"
 )

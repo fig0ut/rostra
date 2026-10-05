@@ -1,3 +1,5 @@
+> This page describes upstream sing-box projects and services, not Rostra releases or endorsements.
+
 # :material-decagram: Features
 
 #### UI options

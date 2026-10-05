@@ -8,7 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/sagernet/sing-box/common/tls"
+	"github.com/fig0ut/rostra/common/tls"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"

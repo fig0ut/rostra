@@ -8,10 +8,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/common/badhttp"
-	"github.com/sagernet/sing-box/common/tls"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/common/badhttp"
+	"github.com/fig0ut/rostra/common/tls"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/sing/common/buf"
 	"github.com/sagernet/sing/common/bufio"
 	E "github.com/sagernet/sing/common/exceptions"

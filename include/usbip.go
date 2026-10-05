@@ -3,8 +3,8 @@
 package include
 
 import (
-	"github.com/sagernet/sing-box/adapter/service"
-	"github.com/sagernet/sing-box/service/usbip"
+	"github.com/fig0ut/rostra/adapter/service"
+	"github.com/fig0ut/rostra/service/usbip"
 )
 
 func registerUSBIPServices(registry *service.Registry) {

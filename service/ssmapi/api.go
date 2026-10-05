@@ -3,8 +3,9 @@ package ssmapi
 import (
 	"net/http"
 
-	"github.com/sagernet/sing-box/common/badhttp"
-	C "github.com/sagernet/sing-box/constant"
+	"github.com/fig0ut/rostra/common/badhttp"
+	C "github.com/fig0ut/rostra/constant"
+
 	"github.com/sagernet/sing/common/logger"
 
 	"github.com/go-chi/chi/v5"
@@ -45,7 +46,7 @@ func (s *APIServer) Route(r chi.Router) {
 
 func (s *APIServer) getServerInfo(writer http.ResponseWriter, request *http.Request) {
 	render.JSON(writer, request, render.M{
-		"server":     "sing-box " + C.Version,
+		"server":     "rostra " + C.Version,
 		"apiVersion": "v1",
 	})
 }

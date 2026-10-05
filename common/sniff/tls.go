@@ -6,8 +6,9 @@ import (
 	"errors"
 	"io"
 
-	"github.com/sagernet/sing-box/adapter"
-	C "github.com/sagernet/sing-box/constant"
+	"github.com/fig0ut/rostra/adapter"
+	C "github.com/fig0ut/rostra/constant"
+
 	"github.com/sagernet/sing/common/bufio"
 	E "github.com/sagernet/sing/common/exceptions"
 )

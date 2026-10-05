@@ -9,9 +9,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing/common/byteformats"
 	E "github.com/sagernet/sing/common/exceptions"
@@ -349,7 +350,8 @@ func (s pressureState) memoryPressure() tun.MemoryPressure {
 func (t *adaptiveTimer) nextState(sample memorySample) pressureState {
 	switch t.policyMode {
 	case policyModeMemoryLimit, policyModeNetworkExtension:
-		return nextPressureState(t.state,
+		return nextPressureState(
+			t.state,
 			sample.usage >= t.limitThresholds.trigger,
 			sample.usage >= t.limitThresholds.armed,
 			sample.usage >= t.limitThresholds.resume,
@@ -359,7 +361,8 @@ func (t *adaptiveTimer) nextState(sample memorySample) pressureState {
 			return pressureStateNormal
 		}
 		thresholds := t.availableThresholds(sample)
-		return nextPressureState(t.state,
+		return nextPressureState(
+			t.state,
 			sample.available <= thresholds.trigger,
 			sample.available <= thresholds.armed,
 			sample.available <= thresholds.resume,

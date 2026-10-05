@@ -31,7 +31,7 @@ icon: material/new-box
 
 ### Compile
 
-Use `sing-box rule-set compile [--output <file-name>.srs] <file-name>.json` to compile source to binary rule-set.
+Use `rostra rule-set compile [--output <file-name>.srs] <file-name>.json` to compile source to binary rule-set.
 
 ### Fields
 

@@ -9,7 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	transportHTTP "github.com/sagernet/sing-box/transport/http"
+	transportHTTP "github.com/fig0ut/rostra/transport/http"
+
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing/common"
 	"github.com/sagernet/sing/common/auth"
@@ -133,7 +134,7 @@ func (s *Server) NewTunnelRequest(ctx context.Context, request transportHTTP.Tun
 		addresses, resolveErr := s.resolve(ctx, scope.Domain)
 		if resolveErr != nil {
 			s.logger.ErrorContext(ctx, E.Cause(resolveErr, "process connection from ", request.Source(), ": resolve ", scope.Domain))
-			request.Reject(http.StatusBadGateway, http.Header{"Proxy-Status": []string{"sing-box; error=dns_error"}})
+			request.Reject(http.StatusBadGateway, http.Header{"Proxy-Status": []string{"rostra; error=dns_error"}})
 			return
 		}
 		for _, address := range addresses {

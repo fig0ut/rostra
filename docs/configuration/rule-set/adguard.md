@@ -8,7 +8,7 @@ instead you need to convert them to binary rule-set.
 
 ## Convert
 
-Use `sing-box rule-set convert --type adguard [--output <file-name>.srs] <file-name>.txt` to convert to binary rule-set.
+Use `rostra rule-set convert --type adguard [--output <file-name>.srs] <file-name>.txt` to convert to binary rule-set.
 
 ## Performance
 

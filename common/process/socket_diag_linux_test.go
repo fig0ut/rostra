@@ -10,7 +10,8 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/sagernet/sing-box/log"
+	"github.com/fig0ut/rostra/log"
+
 	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"
 

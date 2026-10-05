@@ -69,7 +69,7 @@ const file_transport_v2raygrpc_stream_proto_rawDesc = "" +
 	"\x04data\x18\x01 \x01(\fR\x04data2M\n" +
 	"\n" +
 	"GunService\x12?\n" +
-	"\x03Tun\x12\x19.transport.v2raygrpc.Hunk\x1a\x19.transport.v2raygrpc.Hunk(\x010\x01B2Z0github.com/sagernet/sing-box/transport/v2raygrpcb\x06proto3"
+	"\x03Tun\x12\x19.transport.v2raygrpc.Hunk\x1a\x19.transport.v2raygrpc.Hunk(\x010\x01B.Z,github.com/fig0ut/rostra/transport/v2raygrpcb\x06proto3"
 
 var (
 	file_transport_v2raygrpc_stream_proto_rawDescOnce sync.Once
@@ -89,7 +89,6 @@ var (
 		(*Hunk)(nil), // 0: transport.v2raygrpc.Hunk
 	}
 )
-
 var file_transport_v2raygrpc_stream_proto_depIdxs = []int32{
 	0, // 0: transport.v2raygrpc.GunService.Tun:input_type -> transport.v2raygrpc.Hunk
 	0, // 1: transport.v2raygrpc.GunService.Tun:output_type -> transport.v2raygrpc.Hunk

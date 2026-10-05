@@ -9,7 +9,8 @@ import (
 	"slices"
 	"time"
 
-	"github.com/sagernet/sing-box/route"
+	"github.com/fig0ut/rostra/route"
+
 	"github.com/sagernet/sing/common/buf"
 	E "github.com/sagernet/sing/common/exceptions"
 

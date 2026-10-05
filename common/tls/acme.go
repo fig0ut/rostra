@@ -9,9 +9,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/sagernet/sing-box/adapter"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/adapter"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/option"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"
 	"github.com/sagernet/sing/service/filemanager"

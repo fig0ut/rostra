@@ -3,8 +3,9 @@ package local
 import (
 	"strings"
 
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/dns"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/dns"
+
 	E "github.com/sagernet/sing/common/exceptions"
 
 	mDNS "github.com/miekg/dns"

@@ -2,6 +2,8 @@
 icon: material/laptop
 ---
 
+> This page describes upstream sing-box projects and services, not Rostra releases or endorsements.
+
 # sing-box for Desktop
 
 sing-box for Desktop allows users to manage and run local or remote sing-box configuration files,

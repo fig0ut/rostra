@@ -15,11 +15,12 @@ import (
 	"testing"
 	"time"
 
-	sTLS "github.com/sagernet/sing-box/common/tls"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
-	sHTTP "github.com/sagernet/sing-box/transport/http"
+	sTLS "github.com/fig0ut/rostra/common/tls"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+	sHTTP "github.com/fig0ut/rostra/transport/http"
+
 	"github.com/sagernet/sing/common"
 	"github.com/sagernet/sing/common/auth"
 	E "github.com/sagernet/sing/common/exceptions"

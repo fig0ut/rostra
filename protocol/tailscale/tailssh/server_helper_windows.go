@@ -10,8 +10,9 @@ import (
 	"os/user"
 	"strings"
 
+	"github.com/fig0ut/rostra/adapter"
+
 	gliderssh "github.com/sagernet/gliderssh"
-	"github.com/sagernet/sing-box/adapter"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/tailscale/util/winutil"
 
@@ -48,7 +49,7 @@ func verifyShellIdentity(platformInterface adapter.PlatformInterface, localUser 
 		return err
 	}
 	if !match {
-		return E.New("Windows SSH sessions run as the sing-box process identity; mapping to a different local user (", localUser.Username, ") requires impersonation, which is not implemented")
+		return E.New("Windows SSH sessions run as the rostra process identity; mapping to a different local user (", localUser.Username, ") requires impersonation, which is not implemented")
 	}
 	return nil
 }
@@ -74,7 +75,7 @@ func newAgentListener(localUser *adapter.PlatformUser) (net.Listener, error) {
 	if err != nil {
 		return nil, E.Cause(err, "lookup requested user")
 	}
-	pipePath := `\\.\pipe\sing-box-tailssh-agent-` + rand.Text()
+	pipePath := `\\.\pipe\rostra-tailssh-agent-` + rand.Text()
 	securityDescriptor := fmt.Sprintf(`D:P(A;;GA;;;SY)(A;;GRGW;;;%s)`, requestedUser.Uid)
 	listener, err := winio.ListenPipe(pipePath, &winio.PipeConfig{
 		SecurityDescriptor: securityDescriptor,

@@ -4,7 +4,8 @@ import (
 	"context"
 	"testing"
 
-	C "github.com/sagernet/sing-box/constant"
+	C "github.com/fig0ut/rostra/constant"
+
 	"github.com/sagernet/sing/common/json"
 	"github.com/sagernet/sing/service"
 

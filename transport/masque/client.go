@@ -7,8 +7,9 @@ import (
 	"sync"
 	"time"
 
-	C "github.com/sagernet/sing-box/constant"
-	transportHTTP "github.com/sagernet/sing-box/transport/http"
+	C "github.com/fig0ut/rostra/constant"
+	transportHTTP "github.com/fig0ut/rostra/transport/http"
+
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing/common/buf"
 	E "github.com/sagernet/sing/common/exceptions"

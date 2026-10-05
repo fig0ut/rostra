@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"strings"
 
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/option"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/option"
 )
 
 type staticMatch uint8

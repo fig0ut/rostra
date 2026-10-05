@@ -3,7 +3,7 @@ package libbox
 import (
 	"context"
 
-	"github.com/sagernet/sing-box/common/stun"
+	"github.com/fig0ut/rostra/common/stun"
 )
 
 type STUNTest struct {

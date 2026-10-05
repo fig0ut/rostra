@@ -6,11 +6,12 @@ import (
 	"net/netip"
 	"slices"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/adapter/outbound"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/adapter/outbound"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/sing-tun"
 	E "github.com/sagernet/sing/common/exceptions"
 	M "github.com/sagernet/sing/common/metadata"

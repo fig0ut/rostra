@@ -1,12 +1,14 @@
 ---
-description: 欢迎来到该 sing-box 项目的文档页。
+description: 欢迎来到 Rostra 项目的文档页。
 ---
 
 # :material-home: 开始
 
-欢迎来到该 sing-box 项目的文档页。
+欢迎来到 Rostra 项目的文档页。
 
-通用代理平台。
+Rostra 是独立维护的 sing-box 分支，与 SagerNet 无隶属关系，也未经其背书。
+
+请参阅 [迁移说明](rostra-migration.md)。历史更新记录及版本号沿用上游 sing-box。
 
 ## 授权
 

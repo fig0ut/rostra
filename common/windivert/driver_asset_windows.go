@@ -21,7 +21,7 @@ func driverFilePath() (string, error) {
 	if err != nil {
 		return "", E.Cause(err, "windivert: locate user cache dir")
 	}
-	return filepath.Join(base, "sing-box", "windivert", "v"+AssetVersion, driverAssetName), nil
+	return filepath.Join(base, "rostra", "windivert", "v"+AssetVersion, driverAssetName), nil
 }
 
 func openVerifiedDriver() (string, *os.File, error) {

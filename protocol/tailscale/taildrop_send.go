@@ -17,7 +17,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sagernet/sing-box/experimental/locale"
+	"github.com/fig0ut/rostra/experimental/locale"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"

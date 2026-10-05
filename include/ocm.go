@@ -3,8 +3,8 @@
 package include
 
 import (
-	"github.com/sagernet/sing-box/adapter/service"
-	"github.com/sagernet/sing-box/service/ocm"
+	"github.com/fig0ut/rostra/adapter/service"
+	"github.com/fig0ut/rostra/service/ocm"
 )
 
 func registerOCMService(registry *service.Registry) {

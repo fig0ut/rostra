@@ -6,7 +6,7 @@ import (
 	"encoding/binary"
 	"testing"
 
-	C "github.com/sagernet/sing-box/constant"
+	C "github.com/fig0ut/rostra/constant"
 
 	"github.com/stretchr/testify/require"
 )

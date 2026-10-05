@@ -12,14 +12,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/adapter/inbound"
-	"github.com/sagernet/sing-box/common/taskmonitor"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/experimental/deprecated"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
-	"github.com/sagernet/sing-box/service/oomkiller"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/adapter/inbound"
+	"github.com/fig0ut/rostra/common/taskmonitor"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/experimental/deprecated"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+	"github.com/fig0ut/rostra/service/oomkiller"
+
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing-tun/gtcpip/header"
 	"github.com/sagernet/sing/common"
@@ -71,15 +72,15 @@ func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLo
 	if len(options.Inet4Address) > 0 || len(options.Inet6Address) > 0 ||
 		len(options.Inet4RouteAddress) > 0 || len(options.Inet6RouteAddress) > 0 ||
 		len(options.Inet4RouteExcludeAddress) > 0 || len(options.Inet6RouteExcludeAddress) > 0 {
-		return nil, E.New("legacy tun address fields are deprecated in sing-box 1.10.0 and removed in sing-box 1.12.0")
+		return nil, E.New("legacy tun address fields are deprecated in rostra 1.10.0 and removed in rostra 1.12.0")
 	}
 	//nolint:staticcheck
 	if options.GSO {
-		return nil, E.New("GSO option in tun is deprecated in sing-box 1.11.0 and removed in sing-box 1.12.0")
+		return nil, E.New("GSO option in tun is deprecated in rostra 1.11.0 and removed in rostra 1.12.0")
 	}
 	//nolint:staticcheck
 	if options.InboundOptions != (option.InboundOptions{}) {
-		return nil, E.New("legacy inbound fields are deprecated in sing-box 1.11.0 and removed in sing-box 1.13.0, checkout migration: https://sing-box.sagernet.org/migration/#migrate-legacy-inbound-fields-to-rule-actions")
+		return nil, E.New("legacy inbound fields are deprecated in rostra 1.11.0 and removed in rostra 1.13.0, checkout migration: https://rostra.sagernet.org/migration/#migrate-legacy-inbound-fields-to-rule-actions")
 	}
 	if options.Stack != "" {
 		deprecated.Report(ctx, deprecated.OptionTunStack)
@@ -388,7 +389,7 @@ func (t *Inbound) Start(stage adapter.StartStage, scope *adapter.Scope) error {
 					Logger:          t.logger,
 					NetworkMonitor:  t.networkManager.NetworkMonitor(),
 					InterfaceFinder: t.networkManager.InterfaceFinder(),
-					TableName:       "sing-box",
+					TableName:       "rostra",
 					DisableNFTables: t.disableNFTables,
 				})
 			}

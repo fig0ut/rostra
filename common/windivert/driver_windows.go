@@ -8,7 +8,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/sagernet/sing-box/common/winmutex"
+	"github.com/fig0ut/rostra/common/winmutex"
+
 	E "github.com/sagernet/sing/common/exceptions"
 
 	"golang.org/x/sys/windows"

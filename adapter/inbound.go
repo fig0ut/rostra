@@ -6,10 +6,11 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/sagernet/sing-box/common/tlsspoof"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/common/tlsspoof"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+
 	M "github.com/sagernet/sing/common/metadata"
 
 	"github.com/miekg/dns"
