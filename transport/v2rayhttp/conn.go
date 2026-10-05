@@ -11,7 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sagernet/sing-box/log"
+	"github.com/fig0ut/rostra/log"
+
 	"github.com/sagernet/sing/common"
 	"github.com/sagernet/sing/common/baderror"
 	"github.com/sagernet/sing/common/buf"

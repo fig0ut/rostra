@@ -5,7 +5,8 @@ import (
 	"net/netip"
 	"syscall"
 
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/winiphlpapi"
 

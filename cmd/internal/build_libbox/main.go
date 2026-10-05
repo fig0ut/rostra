@@ -8,9 +8,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/fig0ut/rostra/cmd/internal/build_shared"
+	"github.com/fig0ut/rostra/log"
+
 	_ "github.com/sagernet/gomobile"
-	"github.com/sagernet/sing-box/cmd/internal/build_shared"
-	"github.com/sagernet/sing-box/log"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/rw"
 	"github.com/sagernet/sing/common/shell"

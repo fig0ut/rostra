@@ -34,7 +34,6 @@ on:
     branches:
       - stable
       - testing
-      - my-testing
       - unstable
 
 concurrency:
@@ -244,9 +243,9 @@ jobs:
         run: |
           set -xeuo pipefail
           mkdir -p dist
-          go build -v -trimpath -o dist/sing-box -tags "${BUILD_TAGS}" \
-          -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
-          ./cmd/sing-box
+          go build -v -trimpath -o dist/rostra -tags "${BUILD_TAGS}" \
+          -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
+          ./cmd/rostra
         env:
           CGO_ENABLED: "0"
           GOOS: ${{ matrix.os }}
@@ -273,9 +272,9 @@ jobs:
         run: |
           set -xeuo pipefail
           mkdir -p dist
-          go build -v -trimpath -o dist/sing-box -tags "${BUILD_TAGS}" \
-          -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
-          ./cmd/sing-box
+          go build -v -trimpath -o dist/rostra -tags "${BUILD_TAGS}" \
+          -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
+          ./cmd/rostra
         env:
           CGO_ENABLED: "1"
           GOOS: linux
@@ -290,9 +289,9 @@ jobs:
         run: |
           set -xeuo pipefail
           mkdir -p dist
-          go build -v -trimpath -o dist/sing-box -tags "${BUILD_TAGS}" \
-          -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
-          ./cmd/sing-box
+          go build -v -trimpath -o dist/rostra -tags "${BUILD_TAGS}" \
+          -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
+          ./cmd/rostra
         env:
           CGO_ENABLED: "1"
           GOOS: linux
@@ -307,9 +306,9 @@ jobs:
         run: |
           set -xeuo pipefail
           mkdir -p dist
-          go build -v -trimpath -o dist/sing-box -tags "${BUILD_TAGS}" \
-          -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
-          ./cmd/sing-box
+          go build -v -trimpath -o dist/rostra -tags "${BUILD_TAGS}" \
+          -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
+          ./cmd/rostra
         env:
           CGO_ENABLED: "0"
           GOOS: ${{ matrix.os }}
@@ -327,9 +326,9 @@ jobs:
           export CC='${{ matrix.ndk }}-clang'
           export CXX="${CC}++"
           mkdir -p dist
-          GOOS=$BUILD_GOOS GOARCH=$BUILD_GOARCH build go build -v -trimpath -o dist/sing-box -tags "${BUILD_TAGS}" \
-          -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
-          ./cmd/sing-box
+          GOOS=$BUILD_GOOS GOARCH=$BUILD_GOARCH build go build -v -trimpath -o dist/rostra -tags "${BUILD_TAGS}" \
+          -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
+          ./cmd/rostra
         env:
           CGO_ENABLED: "1"
           BUILD_GOOS: ${{ matrix.os }}
@@ -337,7 +336,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Set name
         run: |-
-          DIR_NAME="sing-box-${{ needs.calculate_version.outputs.version }}-${{ matrix.os }}-${{ matrix.arch }}"
+          DIR_NAME="rostra-${{ needs.calculate_version.outputs.version }}-${{ matrix.os }}-${{ matrix.arch }}"
           if [[ -n "${{ matrix.goarm }}" ]]; then
             DIR_NAME="${DIR_NAME}v${{ matrix.goarm }}"
           elif [[ -n "${{ matrix.go386 }}" && "${{ matrix.go386 }}" != 'sse2' ]]; then
@@ -365,9 +364,9 @@ jobs:
           cp .fpm_systemd .fpm
           fpm -t deb \
             -v "$PKG_VERSION" \
-            -p "dist/sing-box_${{ needs.calculate_version.outputs.version }}_${{ matrix.os }}_${{ matrix.debian }}.deb" \
+            -p "dist/rostra_${{ needs.calculate_version.outputs.version }}_${{ matrix.os }}_${{ matrix.debian }}.deb" \
             --architecture ${{ matrix.debian }} \
-            dist/sing-box=/usr/bin/sing-box
+            dist/rostra=/usr/bin/rostra
           set +x
           SIGNING_PASSPHRASE_FILE=$(mktemp "$RUNNER_TEMP/gpg-passphrase.XXXXXX")
           trap 'rm -f "$SIGNING_PASSPHRASE_FILE"' EXIT
@@ -387,9 +386,9 @@ jobs:
           cp .fpm_systemd .fpm
           fpm -t rpm \
             -v "$PKG_VERSION" \
-            -p "dist/sing-box_${{ needs.calculate_version.outputs.version }}_${{ matrix.os }}_${{ matrix.rpm }}.rpm" \
+            -p "dist/rostra_${{ needs.calculate_version.outputs.version }}_${{ matrix.os }}_${{ matrix.rpm }}.rpm" \
             --architecture ${{ matrix.rpm }} \
-            dist/sing-box=/usr/bin/sing-box
+            dist/rostra=/usr/bin/rostra
           set +x
           SIGNING_PASSPHRASE_FILE=$(mktemp "$RUNNER_TEMP/gpg-passphrase.XXXXXX")
           trap 'rm -f "$SIGNING_PASSPHRASE_FILE"' EXIT
@@ -414,9 +413,9 @@ jobs:
           cp .fpm_pacman .fpm
           fpm -t pacman \
             -v "$PKG_VERSION" \
-            -p "dist/sing-box_${{ needs.calculate_version.outputs.version }}_${{ matrix.os }}_${{ matrix.pacman }}.pkg.tar.zst" \
+            -p "dist/rostra_${{ needs.calculate_version.outputs.version }}_${{ matrix.os }}_${{ matrix.pacman }}.pkg.tar.zst" \
             --architecture ${{ matrix.pacman }} \
-            dist/sing-box=/usr/bin/sing-box
+            dist/rostra=/usr/bin/rostra
       - name: Package OpenWrt
         if: matrix.openwrt != ''
         run: |-
@@ -427,9 +426,9 @@ jobs:
             -v "$PKG_VERSION" \
             -p "dist/openwrt.deb" \
             --architecture all \
-            dist/sing-box=/usr/bin/sing-box
+            dist/rostra=/usr/bin/rostra
           for architecture in ${{ matrix.openwrt }}; do
-            .github/deb2ipk.sh "$architecture" "dist/openwrt.deb" "dist/sing-box_${{ needs.calculate_version.outputs.version }}_openwrt_${architecture}.ipk"
+            .github/deb2ipk.sh "$architecture" "dist/openwrt.deb" "dist/rostra_${{ needs.calculate_version.outputs.version }}_openwrt_${architecture}.ipk"
           done
           rm "dist/openwrt.deb"
       - name: Install apk-tools
@@ -444,8 +443,8 @@ jobs:
             .github/build_openwrt_apk.sh \
               "$architecture" \
               "${{ needs.calculate_version.outputs.version }}" \
-              "dist/sing-box" \
-              "dist/sing-box_${{ needs.calculate_version.outputs.version }}_openwrt_${architecture}.apk"
+              "dist/rostra" \
+              "dist/rostra_${{ needs.calculate_version.outputs.version }}_openwrt_${architecture}.apk"
           done
       - name: Package Alpine APK
         if: matrix.alpine != ''
@@ -454,8 +453,8 @@ jobs:
           .github/build_alpine_apk.sh \
             "${{ matrix.alpine }}" \
             "${{ needs.calculate_version.outputs.version }}" \
-            "dist/sing-box" \
-            "dist/sing-box_${{ needs.calculate_version.outputs.version }}_linux_${{ matrix.alpine }}.apk"
+            "dist/rostra" \
+            "dist/rostra_${{ needs.calculate_version.outputs.version }}_linux_${{ matrix.alpine }}.apk"
       - name: Archive
         run: |
           set -xeuo pipefail
@@ -463,10 +462,10 @@ jobs:
           mkdir -p "${DIR_NAME}"
           cp ../LICENSE "${DIR_NAME}"
           if [ '${{ matrix.os }}' = 'windows' ]; then
-            cp sing-box "${DIR_NAME}/sing-box.exe"
+            cp rostra "${DIR_NAME}/rostra.exe"
             zip -r "${DIR_NAME}.zip" "${DIR_NAME}"
           else
-            cp sing-box "${DIR_NAME}"
+            cp rostra "${DIR_NAME}"
             if [ -f libcronet.so ]; then
               cp libcronet.so "${DIR_NAME}"
             fi
@@ -474,7 +473,7 @@ jobs:
           fi
           rm -r "${DIR_NAME}"
       - name: Cleanup
-        run: rm -f dist/sing-box dist/libcronet.so
+        run: rm -f dist/rostra dist/libcronet.so
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -549,9 +548,9 @@ jobs:
         run: |
           set -xeuo pipefail
           mkdir -p dist
-          go build -v -trimpath -o dist/sing-box -tags "${BUILD_TAGS}" \
-          -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
-          ./cmd/sing-box
+          go build -v -trimpath -o dist/rostra -tags "${BUILD_TAGS}" \
+          -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=${{ needs.calculate_version.outputs.version }}' ${LDFLAGS_SHARED} -s -w -buildid=" \
+          ./cmd/rostra
         env:
           CGO_ENABLED: "1"
           GOOS: darwin
@@ -560,7 +559,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Set name
         run: |-
-          DIR_NAME="sing-box-${{ needs.calculate_version.outputs.version }}-darwin-${{ matrix.arch }}"
+          DIR_NAME="rostra-${{ needs.calculate_version.outputs.version }}-darwin-${{ matrix.arch }}"
           if [[ -n "${{ matrix.legacy_name }}" ]]; then
             DIR_NAME="${DIR_NAME}-legacy-${{ matrix.legacy_name }}"
           fi
@@ -571,11 +570,11 @@ jobs:
           cd dist
           mkdir -p "${DIR_NAME}"
           cp ../LICENSE "${DIR_NAME}"
-          cp sing-box "${DIR_NAME}"
+          cp rostra "${DIR_NAME}"
           tar -czvf "${DIR_NAME}.tar.gz" "${DIR_NAME}"
           rm -r "${DIR_NAME}"
       - name: Cleanup
-        run: rm dist/sing-box
+        run: rm dist/rostra
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -623,9 +622,9 @@ jobs:
           $TAGS = Get-Content release/DEFAULT_BUILD_TAGS_WINDOWS
           $LDFLAGS_SHARED = Get-Content release/LDFLAGS
           mkdir -p dist
-          go build -v -trimpath -o dist/sing-box.exe -tags "$TAGS" `
-          -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=${{ needs.calculate_version.outputs.version }}' $LDFLAGS_SHARED -s -w -buildid=" `
-          ./cmd/sing-box
+          go build -v -trimpath -o dist/rostra.exe -tags "$TAGS" `
+          -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=${{ needs.calculate_version.outputs.version }}' $LDFLAGS_SHARED -s -w -buildid=" `
+          ./cmd/rostra
         env:
           CGO_ENABLED: "0"
           GOOS: windows
@@ -637,9 +636,9 @@ jobs:
           $TAGS = Get-Content release/DEFAULT_BUILD_TAGS_OTHERS
           $LDFLAGS_SHARED = Get-Content release/LDFLAGS
           mkdir -p dist
-          go build -v -trimpath -o dist/sing-box.exe -tags "$TAGS" `
-          -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=${{ needs.calculate_version.outputs.version }}' $LDFLAGS_SHARED -s -w -buildid=" `
-          ./cmd/sing-box
+          go build -v -trimpath -o dist/rostra.exe -tags "$TAGS" `
+          -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=${{ needs.calculate_version.outputs.version }}' $LDFLAGS_SHARED -s -w -buildid=" `
+          ./cmd/rostra
         env:
           CGO_ENABLED: "0"
           GOOS: windows
@@ -659,28 +658,28 @@ jobs:
       - name: Archive
         if: matrix.naive
         run: |
-          $DIR_NAME = "sing-box-${{ needs.calculate_version.outputs.version }}-windows-${{ matrix.arch }}"
+          $DIR_NAME = "rostra-${{ needs.calculate_version.outputs.version }}-windows-${{ matrix.arch }}"
           mkdir "dist/$DIR_NAME"
           Copy-Item LICENSE "dist/$DIR_NAME"
-          Copy-Item "dist/sing-box.exe" "dist/$DIR_NAME"
+          Copy-Item "dist/rostra.exe" "dist/$DIR_NAME"
           Copy-Item "dist/libcronet.dll" "dist/$DIR_NAME"
           Compress-Archive -Path "dist/$DIR_NAME" -DestinationPath "dist/$DIR_NAME.zip"
           Remove-Item -Recurse "dist/$DIR_NAME"
       - name: Archive
         if: ${{ !matrix.naive }}
         run: |
-          $DIR_NAME = "sing-box-${{ needs.calculate_version.outputs.version }}-windows-${{ matrix.arch }}"
+          $DIR_NAME = "rostra-${{ needs.calculate_version.outputs.version }}-windows-${{ matrix.arch }}"
           mkdir "dist/$DIR_NAME"
           Copy-Item LICENSE "dist/$DIR_NAME"
-          Copy-Item "dist/sing-box.exe" "dist/$DIR_NAME"
+          Copy-Item "dist/rostra.exe" "dist/$DIR_NAME"
           Compress-Archive -Path "dist/$DIR_NAME" -DestinationPath "dist/$DIR_NAME.zip"
           Remove-Item -Recurse "dist/$DIR_NAME"
       - name: Cleanup
         if: matrix.naive
-        run: Remove-Item dist/sing-box.exe, dist/libcronet.dll
+        run: Remove-Item dist/rostra.exe, dist/libcronet.dll
       - name: Cleanup
         if: ${{ !matrix.naive }}
-        run: Remove-Item dist/sing-box.exe
+        run: Remove-Item dist/rostra.exe
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -688,7 +687,7 @@ jobs:
           path: "dist"
   build_android_library:
     name: Build Android library (${{ matrix.go_arch }})
-    if: (github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Android' || inputs.build == 'publish-android') && github.ref != 'refs/heads/oldstable'
+    if: vars.ENABLE_UPSTREAM_CLIENT_BUILDS == 'true' && ((github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Android' || inputs.build == 'publish-android') && github.ref != 'refs/heads/oldstable')
     runs-on: ubuntu-latest
     needs:
       - calculate_version
@@ -747,7 +746,7 @@ jobs:
           compression-level: 0
   build_android:
     name: Build Android (${{ matrix.variant }})
-    if: (github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Android') && github.ref != 'refs/heads/oldstable'
+    if: vars.ENABLE_UPSTREAM_CLIENT_BUILDS == 'true' && ((github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Android') && github.ref != 'refs/heads/oldstable')
     runs-on: ubuntu-latest
     needs:
       - calculate_version
@@ -816,7 +815,7 @@ jobs:
           cd clients/android
           git checkout main
       - name: Checkout dev branch
-        if: github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/my-testing'
+        if: github.ref == 'refs/heads/testing'
         run: |-
           cd clients/android
           git checkout dev
@@ -874,7 +873,7 @@ jobs:
           path: 'dist'
   publish_android:
     name: Publish Android
-    if: github.event_name == 'workflow_dispatch' && inputs.build == 'publish-android' && (github.ref == 'refs/heads/stable' || github.ref == 'refs/heads/testing')
+    if: vars.ENABLE_UPSTREAM_CLIENT_BUILDS == 'true' && (github.event_name == 'workflow_dispatch' && inputs.build == 'publish-android' && (github.ref == 'refs/heads/stable' || github.ref == 'refs/heads/testing'))
     runs-on: ubuntu-latest
     needs:
       - calculate_version
@@ -933,7 +932,7 @@ jobs:
           cd clients/android
           git checkout main
       - name: Checkout dev branch
-        if: github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/my-testing'
+        if: github.ref == 'refs/heads/testing'
         run: |-
           cd clients/android
           git checkout dev
@@ -983,7 +982,7 @@ jobs:
   build_windows_client:
     name: Build Windows client (${{ matrix.desktop_arch }})
     # Opt in with the repository variable after configuring signing credentials.
-    if: vars.BUILD_WINDOWS_CLIENT == 'true' && ((github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Windows') && github.ref != 'refs/heads/oldstable')
+    if: vars.ENABLE_UPSTREAM_CLIENT_BUILDS == 'true' && (vars.BUILD_WINDOWS_CLIENT == 'true' && ((github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Windows') && github.ref != 'refs/heads/oldstable'))
     runs-on: windows-latest
     needs:
       - calculate_version
@@ -1005,7 +1004,7 @@ jobs:
         if: github.ref == 'refs/heads/stable' && github.event_name != 'workflow_dispatch'
         run: git -C clients/desktop checkout main
       - name: Checkout dev branch
-        if: github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/my-testing'
+        if: github.ref == 'refs/heads/testing'
         run: git -C clients/desktop checkout dev
       - name: Checkout desktop submodules
         run: git -C clients/desktop submodule update --init --recursive
@@ -1100,7 +1099,7 @@ jobs:
           path: 'dist'
   build_linux_client:
     name: Build Linux client (${{ matrix.desktop_arch }})
-    if: (github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Linux') && github.ref != 'refs/heads/oldstable'
+    if: vars.ENABLE_UPSTREAM_CLIENT_BUILDS == 'true' && ((github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Linux') && github.ref != 'refs/heads/oldstable')
     runs-on: ubuntu-26.04
     needs:
       - calculate_version
@@ -1121,7 +1120,7 @@ jobs:
         if: github.ref == 'refs/heads/stable' && github.event_name != 'workflow_dispatch'
         run: git -C clients/desktop checkout main
       - name: Checkout dev branch
-        if: github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/my-testing'
+        if: github.ref == 'refs/heads/testing'
         run: git -C clients/desktop checkout dev
       - name: Checkout desktop submodules
         run: git -C clients/desktop submodule update --init --recursive
@@ -1273,7 +1272,7 @@ jobs:
   build_apple_library:
     name: Build Apple library (${{ matrix.artifact }})
     runs-on: ${{ matrix.build && 'xcode-27' || 'ubuntu-latest' }}
-    if: github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Apple' || inputs.build == 'Apple-release' || inputs.build == 'iOS' || inputs.build == 'macOS' || inputs.build == 'tvOS' || inputs.build == 'macOS-standalone' || inputs.build == 'iOS-jailbreak'
+    if: vars.ENABLE_UPSTREAM_CLIENT_BUILDS == 'true' && (github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Apple' || inputs.build == 'Apple-release' || inputs.build == 'iOS' || inputs.build == 'macOS' || inputs.build == 'tvOS' || inputs.build == 'macOS-standalone' || inputs.build == 'iOS-jailbreak')
     needs:
       - calculate_version
     strategy:
@@ -1344,7 +1343,7 @@ jobs:
   build_apple:
     name: Build Apple release clients
     runs-on: ${{ matrix.if && 'xcode-27' || 'ubuntu-latest' }}
-    if: github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Apple-release' || inputs.build == 'macOS-standalone' || inputs.build == 'iOS-jailbreak'
+    if: vars.ENABLE_UPSTREAM_CLIENT_BUILDS == 'true' && (github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Apple-release' || inputs.build == 'macOS-standalone' || inputs.build == 'iOS-jailbreak')
     needs:
       - calculate_version
       - build_apple_library
@@ -1417,7 +1416,7 @@ jobs:
           cd clients/apple
           git checkout main
       - name: Checkout dev branch
-        if: matrix.if && (github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/my-testing')
+        if: matrix.if && (github.ref == 'refs/heads/testing')
         run: |-
           cd clients/apple
           git checkout dev
@@ -1676,7 +1675,7 @@ jobs:
     name: Build Apple App Store clients
     runs-on: ${{ matrix.if && 'xcode-27' || 'ubuntu-latest' }}
     # Opt in with the repository variable after configuring signing credentials.
-    if: vars.BUILD_APPLE_SIGNED_CLIENTS == 'true' && (github.event_name == 'workflow_dispatch' && (inputs.build == 'All' || inputs.build == 'Apple' || inputs.build == 'iOS' || inputs.build == 'macOS' || inputs.build == 'tvOS'))
+    if: vars.ENABLE_UPSTREAM_CLIENT_BUILDS == 'true' && (vars.BUILD_APPLE_SIGNED_CLIENTS == 'true' && (github.event_name == 'workflow_dispatch' && (inputs.build == 'All' || inputs.build == 'Apple' || inputs.build == 'iOS' || inputs.build == 'macOS' || inputs.build == 'tvOS')))
     needs:
       - calculate_version
       - build_apple_library
@@ -1726,11 +1725,10 @@ jobs:
     # Explicit status checks allow skipped optional clients, but no empty releases.
     if: >-
       !failure() && !cancelled() && github.event_name == 'workflow_dispatch' &&
-      (inputs.build == 'All' || inputs.build == 'Binary' || inputs.build == 'Android' ||
-      (inputs.build == 'Windows' && vars.BUILD_WINDOWS_CLIENT == 'true') ||
-      inputs.build == 'Linux' || inputs.build == 'Apple-release' ||
-      (inputs.build == 'macOS-standalone' && vars.BUILD_APPLE_SIGNED_CLIENTS == 'true') ||
-      inputs.build == 'iOS-jailbreak')
+      (needs.build.result == 'success' || needs.build_darwin.result == 'success' ||
+      needs.build_windows.result == 'success' || needs.build_android.result == 'success' ||
+      needs.build_windows_client.result == 'success' || needs.build_linux_client.result == 'success' ||
+      needs.build_apple.result == 'success')
     runs-on: ubuntu-latest
     permissions:
       contents: write

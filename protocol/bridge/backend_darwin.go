@@ -8,8 +8,9 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing/common/buf"
 	E "github.com/sagernet/sing/common/exceptions"
@@ -88,7 +89,7 @@ func (b *backendDarwin) Start(stage adapter.StartStage, scope *adapter.Scope) er
 
 func (b *backendDarwin) start(scope *adapter.Scope) error {
 	b.tunName = tun.CalculateInterfaceName(b.bridgeName)
-	b.anchorName = "com.apple/sing-box-" + b.tunName
+	b.anchorName = "com.apple/rostra-" + b.tunName
 	scope.Add(func() error {
 		b.readGroup.Wait()
 		return nil

@@ -7,7 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
+
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing-tun/dnsinfo"
 	"github.com/sagernet/sing/common"

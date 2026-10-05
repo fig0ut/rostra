@@ -4,10 +4,7 @@ icon: material/forum
 
 # 支持
 
-| 通道              | 链接                                        |
-| :---------------- | :------------------------------------------ |
-| GitHub Issues     | https://github.com/SagerNet/sing-box/issues |
-| Telegram 通知频道 | https://t.me/yapnc                          |
-| Telegram 用户组   | https://t.me/yapug                          |
-| 邮件              | contact@sagernet.org                        |
+请到 [fig0ut/rostra](https://github.com/fig0ut/rostra/issues) 报告 Rostra 问题，
+并提供 `rostra version`、相关日志及移除密钥等敏感信息的最小配置。
 
+Rostra 独立维护，不由 SagerNet 提供支持。

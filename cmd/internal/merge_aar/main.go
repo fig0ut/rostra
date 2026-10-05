@@ -9,7 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sagernet/sing-box/log"
+	"github.com/fig0ut/rostra/log"
+
 	E "github.com/sagernet/sing/common/exceptions"
 )
 

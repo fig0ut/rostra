@@ -2,6 +2,8 @@
 icon: material/apple
 ---
 
+> This page describes upstream sing-box projects and services, not Rostra releases or endorsements.
+
 # sing-box for Apple platforms
 
 SFI/SFM/SFT allows users to manage and run local or remote sing-box configuration files, and provides

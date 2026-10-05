@@ -25,11 +25,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/adapter/certificate"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/adapter/certificate"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/sing/common"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/ntp"
@@ -366,7 +367,7 @@ func (s *Service) requestCertificate(ctx context.Context) ([]byte, []byte, *tls.
 	}
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("User-Agent", "sing-box/"+C.Version)
+	request.Header.Set("User-Agent", "rostra/"+C.Version)
 	if s.apiToken != "" {
 		request.Header.Set("Authorization", "Bearer "+s.apiToken)
 	} else {

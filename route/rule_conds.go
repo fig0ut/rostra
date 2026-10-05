@@ -1,8 +1,8 @@
 package route
 
 import (
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/option"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/option"
 )
 
 func hasRule(rules []option.Rule, cond func(rule option.DefaultRule) bool) bool {

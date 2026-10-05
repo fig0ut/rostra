@@ -169,7 +169,7 @@ func bridgeAnchor(tunName string) string {
 	if err != nil {
 		return ""
 	}
-	return "com.apple/sing-box-" + tunName
+	return "com.apple/rostra-" + tunName
 }
 
 func createBridgeTun(mtu int) (int, string, error) {

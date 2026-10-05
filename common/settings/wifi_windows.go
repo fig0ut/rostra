@@ -9,7 +9,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
+
 	"github.com/sagernet/sing/common/winwlanapi"
 
 	"golang.org/x/sys/windows"

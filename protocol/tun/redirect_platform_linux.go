@@ -7,8 +7,9 @@ import (
 	"os"
 	"sync"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/common/srs"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/common/srs"
+
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing/common"
 	E "github.com/sagernet/sing/common/exceptions"
@@ -43,7 +44,7 @@ func (r *platformAutoRedirect) Start() error {
 	}
 	session, err := r.inbound.platformInterface.CreateAutoRedirect(adapter.AutoRedirectOptions{
 		TunOptions:                     &r.inbound.tunOptions,
-		TableName:                      "sing-box",
+		TableName:                      "rostra",
 		RedirectPort:                   redirectServer.Port(),
 		RedirectListenerFileDescriptor: redirectServer.ListenerFileDescriptor,
 		RouteAddressSetFileDescriptor:  r.routeAddressSetFileDescriptor,

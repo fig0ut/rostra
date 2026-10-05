@@ -584,7 +584,7 @@ uTLS 是 "crypto/tls" 的一个分支，它提供了 ClientHello 指纹识别阻
 
 ECH (Encrypted Client Hello) 是一个 TLS 扩展，它允许客户端加密其 ClientHello 的第一部分信息。
 
-ECH 密钥和配置可以通过 `sing-box generate ech-keypair` 生成。
+ECH 密钥和配置可以通过 `rostra generate ech-keypair` 生成。
 
 #### pq_signature_schemes_enabled
 
@@ -806,7 +806,7 @@ ACME DNS01 验证字段。如果配置，将禁用其他验证方法。
 
 ==必填==
 
-私钥，由 `sing-box generate reality-keypair` 生成。
+私钥，由 `rostra generate reality-keypair` 生成。
 
 #### public_key
 
@@ -814,7 +814,7 @@ ACME DNS01 验证字段。如果配置，将禁用其他验证方法。
 
 ==必填==
 
-公钥，由 `sing-box generate reality-keypair` 生成。
+公钥，由 `rostra generate reality-keypair` 生成。
 
 #### short_id
 

@@ -8,9 +8,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fig0ut/rostra/common/tls"
+
 	"github.com/sagernet/quic-go"
 	"github.com/sagernet/quic-go/http3"
-	"github.com/sagernet/sing-box/common/tls"
 )
 
 func newHTTP3Server(handler *Server, config tls.ServerConfig) (packetHTTPServer, error) {

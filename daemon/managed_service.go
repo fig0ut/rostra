@@ -5,7 +5,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/sagernet/sing-box/service/oomkiller"
+	"github.com/fig0ut/rostra/service/oomkiller"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

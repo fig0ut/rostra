@@ -11,7 +11,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/sagernet/sing-box/common/windivert"
+	"github.com/fig0ut/rostra/common/windivert"
+
 	"github.com/sagernet/sing-tun/gtcpip/header"
 	E "github.com/sagernet/sing/common/exceptions"
 

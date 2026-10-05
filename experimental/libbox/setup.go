@@ -9,13 +9,14 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/sagernet/sing-box/common/networkquality"
-	"github.com/sagernet/sing-box/common/stun"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/dns"
-	"github.com/sagernet/sing-box/experimental/locale"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/service/oomkiller"
+	"github.com/fig0ut/rostra/common/networkquality"
+	"github.com/fig0ut/rostra/common/stun"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/dns"
+	"github.com/fig0ut/rostra/experimental/locale"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/service/oomkiller"
+
 	"github.com/sagernet/sing/common/byteformats"
 	E "github.com/sagernet/sing/common/exceptions"
 )

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/daemon"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/daemon"
 )
 
 type daemonPlatform interface {

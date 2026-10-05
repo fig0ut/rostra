@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
+
 	"github.com/sagernet/sing-openconnect"
 	"github.com/sagernet/sing/common"
 	"github.com/sagernet/sing/service"

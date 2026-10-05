@@ -1,0 +1,44 @@
+#!/sbin/openrc-run
+
+name=$RC_SVCNAME
+description="rostra service"
+supervisor="supervise-daemon"
+command="/usr/bin/rostra"
+extra_commands="checkconfig"
+extra_started_commands="reload"
+
+: ${ROSTRA_CONFIG:=${config:-"/etc/rostra"}}
+
+if [ -d "$ROSTRA_CONFIG" ]; then
+	_config_opt="-C $ROSTRA_CONFIG"
+elif [ -z "$ROSTRA_CONFIG" ]; then
+	_config_opt=""
+else
+	_config_opt="-c $ROSTRA_CONFIG"
+fi
+
+_workdir=${ROSTRA_WORKDIR:-${workdir:-"/var/lib/rostra"}}
+
+command_args="run --disable-color
+	-D $_workdir
+	$_config_opt"
+
+depend() {
+	after net dns
+}
+
+checkconfig() {
+	ebegin "Checking $RC_SVCNAME configuration"
+	rostra check -D "$_workdir" $_config_opt
+	eend $?
+}
+
+start_pre() {
+	checkconfig
+}
+
+reload() {
+	ebegin "Reloading $RC_SVCNAME"
+	checkconfig && $supervisor "$RC_SVCNAME" --signal HUP
+	eend $?
+}

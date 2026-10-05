@@ -10,9 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/sing/common"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/service"
@@ -194,7 +195,7 @@ func (d *dashboard) fetch(ctx context.Context) error {
 }
 
 func (d *dashboard) extract(body io.Reader, etag string) error {
-	tempFile, err := filemanager.CreateTemp(d.ctx, "sing-box-dashboard-*.zip")
+	tempFile, err := filemanager.CreateTemp(d.ctx, "rostra-dashboard-*.zip")
 	if err != nil {
 		return err
 	}

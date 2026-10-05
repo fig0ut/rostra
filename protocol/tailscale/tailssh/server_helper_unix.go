@@ -9,8 +9,9 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/fig0ut/rostra/adapter"
+
 	gliderssh "github.com/sagernet/gliderssh"
-	"github.com/sagernet/sing-box/adapter"
 	E "github.com/sagernet/sing/common/exceptions"
 )
 

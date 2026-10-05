@@ -6,8 +6,9 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/log"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/log"
+
 	"github.com/sagernet/sing/common"
 	E "github.com/sagernet/sing/common/exceptions"
 )

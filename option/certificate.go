@@ -3,8 +3,9 @@ package option
 import (
 	"reflect"
 
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/schema"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/schema"
+
 	"github.com/sagernet/sing/common/json"
 	"github.com/sagernet/sing/common/json/badoption"
 )

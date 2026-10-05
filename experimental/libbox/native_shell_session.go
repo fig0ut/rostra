@@ -3,7 +3,8 @@
 package libbox
 
 import (
-	"github.com/sagernet/sing-box/protocol/tailscale/tailssh"
+	"github.com/fig0ut/rostra/protocol/tailscale/tailssh"
+
 	"github.com/sagernet/sing/common"
 )
 

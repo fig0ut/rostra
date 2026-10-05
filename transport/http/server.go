@@ -9,10 +9,11 @@ import (
 	"slices"
 	"time"
 
-	"github.com/sagernet/sing-box/common/listener"
-	"github.com/sagernet/sing-box/common/tls"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/common/listener"
+	"github.com/fig0ut/rostra/common/tls"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/sing/common/auth"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"
@@ -27,7 +28,7 @@ const (
 	idleTimeout         = 60 * time.Second
 	maxDiscardBodyBytes = 256 << 10
 	discardBodyTimeout  = 5 * time.Second
-	realm               = "sing-box"
+	realm               = "rostra"
 )
 
 var ConfigureHTTP3ListenerFunc func(ctx context.Context, logger logger.Logger, listener *listener.Listener, handler http.Handler, tlsConfig tls.ServerConfig, options option.QUICOptions) (io.Closer, error)
