@@ -104,6 +104,7 @@ icon: material/new-box
       ... // 拨号字段
     },
     "private_key": "UuMBgl7MXTPx9inmQp2UC7Jcnwc6XYbwDNebonM-FCc",
+    "mldsa65_seed": "",
     "short_id": [
       "0123456789abcdef"
     ],
@@ -159,6 +160,7 @@ icon: material/new-box
   "reality": {
     "enabled": false,
     "public_key": "jNXHt1yRo0vDuchQlIP6Z0ZvjT3KtzVI-T4E7RoLJS0",
+    "mldsa65_verify": "",
     "short_id": "0123456789abcdef"
   }
 }
@@ -800,6 +802,16 @@ ACME DNS01 验证字段。如果配置，将禁用其他验证方法。
 
 握手服务器地址和 [拨号参数](/zh/configuration/shared/dial/)。
 
+服务器还会通过配置的拨号器探测此目标，采样 TLS 1.3 握手后的记录大小，
+并在通过认证的 REALITY 连接上发送相同大小的填充记录。
+探测使用正常的证书校验和配置的证书存储，分别采样不使用 ALPN、HTTP/1.1 和 HTTP/2 的情况。
+服务器启动时会发起三次探测。
+
+采样结果缓存一小时，按需刷新。每次探测最多耗时 10 秒，其中握手后的观察时间最多为 5 秒。
+需要新样本的连接可能会在其握手超时范围内等待探测完成。
+失败的探测会在一分钟后按需重试；没有有效样本时，连接继续进行，但不发送这些额外记录。
+此功能匹配记录大小，不提供会话恢复或应用行为模拟。
+
 #### private_key
 
 ==仅服务器==
@@ -815,6 +827,30 @@ ACME DNS01 验证字段。如果配置，将禁用其他验证方法。
 ==必填==
 
 公钥，由 `rostra generate reality-keypair` 生成。
+
+#### mldsa65_seed
+
+==仅服务端==
+
+可选的 ML-DSA-65 签名种子，为使用无填充 base64url 编码的 32 字节数据。
+使用 `rostra generate reality-mldsa65-keypair` 生成独立的种子和验证公钥。
+种子必须与 `private_key` 不同，并且必须保密。
+
+启用后将增加与 Xray 兼容的后量子服务端认证。额外签名占用 3309 字节，
+握手目标的证书数据必须有足够空间容纳它。
+未配置 `mldsa65_verify` 的客户端仍可使用原有 REALITY 认证。留空时禁用。
+
+#### mldsa65_verify
+
+==仅客户端==
+
+可选的 ML-DSA-65 验证公钥，为使用无填充 base64url 编码的 1952 字节数据。
+使用服务端运行 `rostra generate reality-mldsa65-keypair` 时输出的 `Verify` 值。
+配置后，REALITY 连接必须提供绑定证书、ClientHello 和 ServerHello 的有效签名。
+缺少签名或签名无效时拒绝连接。留空时禁用。
+
+这些字段分别对应 Xray 的 `mldsa65Seed` 和 `mldsa65Verify`。
+它们补充 REALITY 认证；TLS 密钥交换仍由选中的密钥共享组决定。
 
 #### short_id
 

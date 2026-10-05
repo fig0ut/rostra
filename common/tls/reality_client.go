@@ -34,6 +34,7 @@ import (
 	M "github.com/sagernet/sing/common/metadata"
 	aTLS "github.com/sagernet/sing/common/tls"
 
+	"github.com/cloudflare/circl/sign/mldsa/mldsa65"
 	utls "github.com/metacubex/utls"
 	"golang.org/x/crypto/hkdf"
 	"golang.org/x/net/http2"
@@ -42,10 +43,11 @@ import (
 var _ ConfigCompat = (*RealityClientConfig)(nil)
 
 type RealityClientConfig struct {
-	ctx       context.Context
-	uClient   *UTLSClientConfig
-	publicKey []byte
-	shortID   [8]byte
+	ctx           context.Context
+	uClient       *UTLSClientConfig
+	publicKey     []byte
+	shortID       [8]byte
+	mldsa65Verify *mldsa65.PublicKey
 }
 
 func NewRealityClient(ctx context.Context, logger logger.ContextLogger, serverAddress string, options option.OutboundTLSOptions) (Config, error) {
@@ -81,7 +83,19 @@ func newRealityClient(ctx context.Context, logger logger.ContextLogger, serverAd
 		return nil, E.Cause(err, "decode short_id")
 	}
 
-	var config Config = &RealityClientConfig{ctx, uClient.(*UTLSClientConfig), publicKey, shortID}
+	var mldsaVerify *mldsa65.PublicKey
+	if options.Reality.MLDSA65Verify != "" {
+		verify, err := base64.RawURLEncoding.DecodeString(options.Reality.MLDSA65Verify)
+		if err != nil || len(verify) != mldsa65.PublicKeySize {
+			return nil, E.New("invalid mldsa65_verify: expected 1952 bytes in unpadded base64url")
+		}
+		key, err := mldsa65.Scheme().UnmarshalBinaryPublicKey(verify)
+		if err != nil {
+			return nil, E.Cause(err, "parse mldsa65_verify")
+		}
+		mldsaVerify = key.(*mldsa65.PublicKey)
+	}
+	var config Config = &RealityClientConfig{ctx, uClient.(*UTLSClientConfig), publicKey, shortID, mldsaVerify}
 	if options.KernelRx || options.KernelTx {
 		if !C.IsLinux {
 			return nil, E.New("kTLS is only supported on Linux")
@@ -130,15 +144,17 @@ func (e *RealityClientConfig) Client(conn net.Conn) (Conn, error) {
 
 func (e *RealityClientConfig) ClientHandshake(ctx context.Context, conn net.Conn) (aTLS.Conn, error) {
 	verifier := &realityVerifier{
-		serverName: e.uClient.ServerName(),
-		roots:      e.uClient.config.RootCAs,
-		time:       e.uClient.config.Time,
+		serverName:    e.uClient.ServerName(),
+		roots:         e.uClient.config.RootCAs,
+		time:          e.uClient.config.Time,
+		mldsa65Verify: e.mldsa65Verify,
 	}
 	uConfig := e.uClient.config.Clone()
 	uConfig.InsecureSkipVerify = true
 	uConfig.SessionTicketsDisabled = true
 	uConfig.VerifyPeerCertificate = verifier.VerifyPeerCertificate
 	uConn := utls.UClient(conn, uConfig, e.uClient.id)
+	verifier.conn = uConn
 	err := uConn.BuildHandshakeState()
 	if err != nil {
 		return nil, err
@@ -284,15 +300,18 @@ func (e *RealityClientConfig) Clone() Config {
 		e.uClient.Clone().(*UTLSClientConfig),
 		e.publicKey,
 		e.shortID,
+		e.mldsa65Verify,
 	}
 }
 
 type realityVerifier struct {
-	serverName string
-	roots      *x509.CertPool
-	time       func() time.Time
-	authKey    []byte
-	verified   bool
+	serverName    string
+	roots         *x509.CertPool
+	time          func() time.Time
+	authKey       []byte
+	verified      bool
+	mldsa65Verify *mldsa65.PublicKey
+	conn          *utls.UConn
 }
 
 func (c *realityVerifier) VerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
@@ -311,6 +330,16 @@ func (c *realityVerifier) VerifyPeerCertificate(rawCerts [][]byte, verifiedChain
 		h := hmac.New(sha512.New, c.authKey)
 		h.Write(pub)
 		if hmac.Equal(h.Sum(nil), certs[0].Signature) {
+			if c.mldsa65Verify != nil {
+				if c.conn == nil || c.conn.HandshakeState.Hello == nil || c.conn.HandshakeState.ServerHello == nil || len(certs[0].Extensions) == 0 {
+					return E.New("reality: missing ML-DSA-65 signature or hello transcript")
+				}
+				h.Write(c.conn.HandshakeState.Hello.Raw)
+				h.Write(c.conn.HandshakeState.ServerHello.Raw)
+				if !mldsa65.Verify(c.mldsa65Verify, h.Sum(nil), nil, certs[0].Extensions[0].Value) {
+					return E.New("reality: invalid ML-DSA-65 signature")
+				}
+			}
 			c.verified = true
 			return nil
 		}

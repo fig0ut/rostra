@@ -550,6 +550,40 @@ _rostra_generate_reality-keypair()
     noun_aliases=()
 }
 
+_rostra_generate_reality-mldsa65-keypair()
+{
+    last_command="rostra_generate_reality-mldsa65-keypair"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--seed=")
+    two_word_flags+=("--seed")
+    local_nonpersistent_flags+=("--seed")
+    local_nonpersistent_flags+=("--seed=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    two_word_flags+=("-c")
+    flags+=("--config-directory=")
+    two_word_flags+=("--config-directory")
+    two_word_flags+=("-C")
+    flags+=("--directory=")
+    two_word_flags+=("--directory")
+    two_word_flags+=("-D")
+    flags+=("--disable-color")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _rostra_generate_tailcat-keypair()
 {
     last_command="rostra_generate_tailcat-keypair"
@@ -716,6 +750,7 @@ _rostra_generate()
     commands+=("ech-keypair")
     commands+=("rand")
     commands+=("reality-keypair")
+    commands+=("reality-mldsa65-keypair")
     commands+=("tailcat-keypair")
     commands+=("tls-keypair")
     commands+=("uuid")
