@@ -1,7 +1,8 @@
 package build_shared
 
 import (
-	"github.com/sagernet/sing-box/common/badversion"
+	"github.com/fig0ut/rostra/common/badversion"
+
 	"github.com/sagernet/sing/common"
 	F "github.com/sagernet/sing/common/format"
 	"github.com/sagernet/sing/common/shell"

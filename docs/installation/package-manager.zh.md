@@ -2,6 +2,8 @@
 icon: material/package
 ---
 
+> 本页说明用于安装上游 sing-box，并非 Rostra。Rostra 目前没有软件包仓库。如需安装 Rostra，请参阅[从源代码构建](build-from-source.md)。
+
 # 包管理器
 
 ## :material-tram: 仓库安装

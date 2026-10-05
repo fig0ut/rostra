@@ -2,6 +2,6 @@
 
 set -e -o pipefail
 
-sudo systemctl enable sing-box
-sudo systemctl start sing-box
-sudo journalctl -u sing-box --output cat -f
+sudo systemctl enable rostra
+sudo systemctl start rostra
+sudo journalctl -u rostra --output cat -f

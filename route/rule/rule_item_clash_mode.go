@@ -4,8 +4,9 @@ import (
 	"context"
 	"strings"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/experimental/clashmode"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/experimental/clashmode"
+
 	"github.com/sagernet/sing/service"
 )
 

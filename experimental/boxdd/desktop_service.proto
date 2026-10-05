@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package desktop;
-option go_package = "github.com/sagernet/sing-box/experimental/boxdd;main";
+option go_package = "github.com/fig0ut/rostra/experimental/boxdd;main";
 
 import "google/protobuf/empty.proto";
 import "daemon/started_service.proto";

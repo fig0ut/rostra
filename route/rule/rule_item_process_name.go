@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
 )
 
 var _ RuleItem = (*ProcessItem)(nil)

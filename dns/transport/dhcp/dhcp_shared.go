@@ -3,8 +3,9 @@ package dhcp
 import (
 	"context"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/dns/transport"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/dns/transport"
+
 	E "github.com/sagernet/sing/common/exceptions"
 
 	mDNS "github.com/miekg/dns"

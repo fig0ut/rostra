@@ -1,6 +1,6 @@
 package libbox
 
-import "github.com/sagernet/sing-box/daemon"
+import "github.com/fig0ut/rostra/daemon"
 
 type TailscaleStatusUpdate struct {
 	endpoints []*TailscaleEndpointStatus

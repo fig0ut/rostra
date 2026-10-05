@@ -3,7 +3,7 @@ package ccm
 import (
 	"sync"
 
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/option"
 )
 
 type UserManager struct {

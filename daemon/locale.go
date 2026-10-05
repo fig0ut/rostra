@@ -3,7 +3,7 @@ package daemon
 import (
 	"context"
 
-	"github.com/sagernet/sing-box/experimental/locale"
+	"github.com/fig0ut/rostra/experimental/locale"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"

@@ -5,7 +5,7 @@ sing-box 使用 JSON 作为配置文件格式。
 
 ```json
 {
-  "$schema": "https://sing-box.sagernet.org/schema.json",
+  "$schema": "https://github.com/fig0ut/rostra/raw/HEAD/docs/schema.json",
   "log": {},
   "dns": {},
   "ntp": {},
@@ -46,17 +46,17 @@ sing-box 使用 JSON 作为配置文件格式。
 ### 检查
 
 ```bash
-sing-box check
+rostra check
 ```
 
 ### 格式化
 
 ```bash
-sing-box format -w -c config.json -D config_directory
+rostra format -w -c config.json -D config_directory
 ```
 
 ### 合并
 
 ```bash
-sing-box merge output.json -c config.json -D config_directory
+rostra merge output.json -c config.json -D config_directory
 ```

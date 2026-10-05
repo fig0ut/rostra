@@ -9,14 +9,15 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/sagernet/sing-box/adapter"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/daemon"
-	"github.com/sagernet/sing-box/experimental/libbox"
-	"github.com/sagernet/sing-box/include"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/service/oomkiller"
-	"github.com/sagernet/sing-box/service/powerreport"
+	"github.com/fig0ut/rostra/adapter"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/daemon"
+	"github.com/fig0ut/rostra/experimental/libbox"
+	"github.com/fig0ut/rostra/include"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/service/oomkiller"
+	"github.com/fig0ut/rostra/service/powerreport"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/service"
 

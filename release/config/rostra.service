@@ -1,0 +1,15 @@
+[Unit]
+Description=rostra service
+Documentation=https://github.com/fig0ut/rostra
+After=network.target nss-lookup.target network-online.target
+
+[Service]
+StateDirectory=rostra
+ExecStart=/usr/bin/rostra -D /var/lib/rostra -C /etc/rostra run
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=10s
+LimitNOFILE=infinity
+
+[Install]
+WantedBy=multi-user.target

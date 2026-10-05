@@ -11,10 +11,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fig0ut/rostra/common/tls"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/quic-go"
 	"github.com/sagernet/quic-go/http3"
-	"github.com/sagernet/sing-box/common/tls"
-	"github.com/sagernet/sing-box/option"
 	E "github.com/sagernet/sing/common/exceptions"
 	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"

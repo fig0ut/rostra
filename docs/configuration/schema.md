@@ -13,7 +13,7 @@ Compatible editors can use it for completion and validation.
 
 ```json
 {
-  "$schema": "https://sing-box.sagernet.org/schema.json"
+  "$schema": "https://github.com/fig0ut/rostra/raw/HEAD/docs/schema.json"
 }
 ```
 
@@ -24,14 +24,14 @@ Compatible editors can use it for completion and validation.
 The schema URI used by compatible editors.
 
 The schema published with this documentation is available at
-[sing-box.sagernet.org/schema.json](https://sing-box.sagernet.org/schema.json).
+[Rostra schema](https://github.com/fig0ut/rostra/raw/HEAD/docs/schema.json).
 
 ### Generate
 
 Use the following command to generate a schema matching the installed binary:
 
 ```bash
-sing-box schema -o schema.json
+rostra schema -o schema.json
 ```
 
 Without `--output`, the schema is written to standard output.

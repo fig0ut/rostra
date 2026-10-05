@@ -21,9 +21,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/option"
+
 	gliderssh "github.com/sagernet/gliderssh"
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/option"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"
 	M "github.com/sagernet/sing/common/metadata"
@@ -184,7 +185,7 @@ func (s *Server) Start() error {
 	fwdHandler := &gliderssh.ForwardedTCPHandler{}
 	unixFwdHandler := &gliderssh.ForwardedUnixHandler{}
 	sshServer := &gliderssh.Server{
-		Version:              "sing-box",
+		Version:              "rostra",
 		ServerConfigCallback: s.serverConfig,
 		Handler:              s.handleSession,
 		SubsystemHandlers: map[string]gliderssh.SubsystemHandler{
@@ -818,7 +819,8 @@ func (s *Server) serveBuiltinSFTP(ctx context.Context, session gliderssh.Session
 
 func (s *Server) buildEnvironment(session gliderssh.Session, connInfo *sshConnInfo, localUser *adapter.PlatformUser) []string {
 	var env []string
-	env = append(env,
+	env = append(
+		env,
 		"USER="+localUser.Username,
 		"HOME="+localUser.HomeDir,
 		"SHELL="+localUser.Shell,
@@ -833,7 +835,8 @@ func (s *Server) buildEnvironment(session gliderssh.Session, connInfo *sshConnIn
 	if remoteAddr != nil && localAddr != nil {
 		remoteHost, remotePort, _ := net.SplitHostPort(remoteAddr.String())
 		localHost, localPort, _ := net.SplitHostPort(localAddr.String())
-		env = append(env,
+		env = append(
+			env,
 			"SSH_CLIENT="+remoteHost+" "+remotePort+" "+localPort,
 			"SSH_CONNECTION="+remoteHost+" "+remotePort+" "+localHost+" "+localPort,
 		)

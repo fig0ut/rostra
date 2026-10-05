@@ -5,9 +5,10 @@ import (
 	"net/netip"
 	"sync"
 
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/netlink"
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/option"
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing/common/control"
 	E "github.com/sagernet/sing/common/exceptions"
@@ -77,7 +78,7 @@ func (b *backendLinux) Start(stage adapter.StartStage, scope *adapter.Scope) err
 
 func (b *backendLinux) start(scope *adapter.Scope) error {
 	b.tunName = tun.CalculateInterfaceName(b.bridgeName)
-	b.nftTableName = "sing-box-" + b.tunName
+	b.nftTableName = "rostra-" + b.tunName
 	scope.Add(func() error {
 		b.readGroup.Wait()
 		return nil
