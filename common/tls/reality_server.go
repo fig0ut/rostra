@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"math"
 	"net"
 	"time"
 
@@ -118,6 +119,14 @@ func NewRealityServer(ctx context.Context, logger log.ContextLogger, options opt
 		tlsConfig.Mldsa65Key = signingKey.Bytes()
 	}
 	tlsConfig.MaxTimeDiff = time.Duration(options.Reality.MaxTimeDifference)
+	tlsConfig.LimitFallbackUpload, err = parseRealityFallbackLimit(options.Reality.LimitFallbackUpload)
+	if err != nil {
+		return nil, E.Cause(err, "limit_fallback_upload")
+	}
+	tlsConfig.LimitFallbackDownload, err = parseRealityFallbackLimit(options.Reality.LimitFallbackDownload)
+	if err != nil {
+		return nil, E.Cause(err, "limit_fallback_download")
+	}
 
 	tlsConfig.ShortIds = make(map[[8]byte]bool)
 	if len(options.Reality.ShortID) == 0 {
@@ -174,6 +183,21 @@ func NewRealityServer(ctx context.Context, logger log.ContextLogger, options opt
 		}
 	}
 	return config, nil
+}
+
+func parseRealityFallbackLimit(options *option.RealityLimitFallbackOptions) (utls.RealityLimitFallback, error) {
+	if options == nil {
+		return utls.RealityLimitFallback{}, nil
+	}
+	// uTLS converts these values to signed counters and bucket capacities.
+	if options.AfterBytes > math.MaxInt64 || options.BytesPerSec > math.MaxInt64 || options.BurstBytesPerSec > math.MaxInt64 {
+		return utls.RealityLimitFallback{}, E.New("values must not exceed ", uint64(math.MaxInt64))
+	}
+	return utls.RealityLimitFallback{
+		AfterBytes:       options.AfterBytes,
+		BytesPerSec:      options.BytesPerSec,
+		BurstBytesPerSec: options.BurstBytesPerSec,
+	}, nil
 }
 
 func (c *RealityServerConfig) ServerName() string {

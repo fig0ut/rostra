@@ -108,7 +108,17 @@ icon: material/new-box
     "short_id": [
       "0123456789abcdef"
     ],
-    "max_time_difference": "1m"
+    "max_time_difference": "1m",
+    "limit_fallback_upload": {
+      "after_bytes": 0,
+      "bytes_per_sec": 0,
+      "burst_bytes_per_sec": 0
+    },
+    "limit_fallback_download": {
+      "after_bytes": 0,
+      "bytes_per_sec": 0,
+      "burst_bytes_per_sec": 0
+    }
   }
 }
 ```
@@ -865,3 +875,23 @@ ACME DNS01 验证字段。如果配置，将禁用其他验证方法。
 服务器和客户端之间的最大时间差。
 
 如果为空则禁用检查。
+
+#### limit_fallback_upload / limit_fallback_download
+
+==仅服务器==
+
+可选的握手目标回落连接带宽限制。上传方向为客户端到目标，下载方向为目标到客户端。
+每个连接、每个方向独立限速，不是服务器总带宽限制。
+通过认证的 REALITY 隧道流量和目标探测不受影响。
+
+| 字段 | 含义 |
+| --- | --- |
+| `after_bytes` | 回落转发开始后不受限速的初始字节数，默认为 `0`。按读取块计数，实际阈值可能多出一个读取块。 |
+| `bytes_per_sec` | 持续速率，单位为字节/秒。`0` 表示禁用该方向的限速，其他字段此时不生效。 |
+| `burst_bytes_per_sec` | 令牌桶容量，单位为字节，字段名与 Xray 对应。留空或小于 `bytes_per_sec` 时，实际容量为 `bytes_per_sec`。桶初始为满。 |
+
+所有值均须为不超过 `9223372036854775807` 的非负整数。
+默认不限制任何方向。回落复制开始前已经转发的初始握手字节不计入这些限制。
+
+这两个字段对应 Xray 的 `limitFallbackUpload` 和 `limitFallbackDownload`。
+限速可能使回落连接的行为与直连目标不同，请按带宽控制需求启用。
