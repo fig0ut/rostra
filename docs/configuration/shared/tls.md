@@ -108,7 +108,17 @@ icon: material/new-box
     "short_id": [
       "0123456789abcdef"
     ],
-    "max_time_difference": "1m"
+    "max_time_difference": "1m",
+    "limit_fallback_upload": {
+      "after_bytes": 0,
+      "bytes_per_sec": 0,
+      "burst_bytes_per_sec": 0
+    },
+    "limit_fallback_download": {
+      "after_bytes": 0,
+      "bytes_per_sec": 0,
+      "burst_bytes_per_sec": 0
+    }
   }
 }
 ```
@@ -879,3 +889,26 @@ A hexadecimal string with zero to eight digits.
 The maximum time difference between the server and the client.
 
 Check disabled if empty.
+
+#### limit_fallback_upload / limit_fallback_download
+
+==Server only==
+
+Optional bandwidth limits for connections forwarded to the handshake target.
+Upload means client to target; download means target to client. Limits apply
+independently to each connection and direction, not to the server's total traffic.
+Authenticated REALITY tunnel traffic and target probes are unaffected.
+
+| Field | Meaning |
+| --- | --- |
+| `after_bytes` | Initial unthrottled bytes once fallback forwarding starts. Defaults to `0`. Accounting uses read chunks, so the threshold can be exceeded by one chunk. |
+| `bytes_per_sec` | Sustained rate in bytes per second. `0` disables limiting in this direction, regardless of the other fields. |
+| `burst_bytes_per_sec` | Token bucket capacity in bytes, following Xray's field name. If omitted or smaller than `bytes_per_sec`, the effective capacity is `bytes_per_sec`. The bucket starts full. |
+
+All values must be nonnegative integers no greater than `9223372036854775807`.
+Both directions are unlimited by default. Initial handshake bytes already
+forwarded before the fallback copy begins are outside these limits.
+
+These fields correspond to Xray's `limitFallbackUpload` and
+`limitFallbackDownload`. Throttling can make fallback traffic behave differently
+from direct connections to the target; enable it when limiting bandwidth is needed.

@@ -212,12 +212,20 @@ func (c CurvePreference) DescribeSchema(builder schema.Builder) (*schema.Node, e
 }
 
 type InboundRealityOptions struct {
-	Enabled           bool                           `json:"enabled,omitempty"`
-	Handshake         InboundRealityHandshakeOptions `json:"handshake,omitempty"`
-	PrivateKey        string                         `json:"private_key,omitempty"`
-	ShortID           badoption.Listable[string]     `json:"short_id,omitempty"`
-	MaxTimeDifference badoption.Duration             `json:"max_time_difference,omitempty"`
-	MLDSA65Seed       string                         `json:"mldsa65_seed,omitempty"`
+	Enabled               bool                           `json:"enabled,omitempty"`
+	Handshake             InboundRealityHandshakeOptions `json:"handshake,omitempty"`
+	PrivateKey            string                         `json:"private_key,omitempty"`
+	ShortID               badoption.Listable[string]     `json:"short_id,omitempty"`
+	MaxTimeDifference     badoption.Duration             `json:"max_time_difference,omitempty"`
+	MLDSA65Seed           string                         `json:"mldsa65_seed,omitempty"`
+	LimitFallbackUpload   *RealityLimitFallbackOptions   `json:"limit_fallback_upload,omitempty"`
+	LimitFallbackDownload *RealityLimitFallbackOptions   `json:"limit_fallback_download,omitempty"`
+}
+
+type RealityLimitFallbackOptions struct {
+	AfterBytes       uint64 `json:"after_bytes,omitempty"`
+	BytesPerSec      uint64 `json:"bytes_per_sec,omitempty"`
+	BurstBytesPerSec uint64 `json:"burst_bytes_per_sec,omitempty"`
 }
 
 type InboundRealityHandshakeOptions struct {

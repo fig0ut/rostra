@@ -8969,6 +8969,12 @@
         },
         "mldsa65_seed": {
           "type": "string"
+        },
+        "limit_fallback_upload": {
+          "$ref": "#/$defs/RealityLimitFallbackOptions"
+        },
+        "limit_fallback_download": {
+          "$ref": "#/$defs/RealityLimitFallbackOptions"
         }
       },
       "additionalProperties": false
@@ -15355,6 +15361,24 @@
             "random",
             "randomized"
           ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "RealityLimitFallbackOptions": {
+      "type": "object",
+      "properties": {
+        "after_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bytes_per_sec": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "burst_bytes_per_sec": {
+          "type": "integer",
+          "minimum": 0
         }
       },
       "additionalProperties": false
