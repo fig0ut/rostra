@@ -266,4 +266,5 @@ type OutboundRealityOptions struct {
 	PublicKey     string `json:"public_key,omitempty"`
 	ShortID       string `json:"short_id,omitempty"`
 	MLDSA65Verify string `json:"mldsa65_verify,omitempty"`
+	FallbackPath  string `json:"fallback_path,omitempty"`
 }

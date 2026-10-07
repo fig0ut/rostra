@@ -171,6 +171,7 @@ icon: material/new-box
     "enabled": false,
     "public_key": "jNXHt1yRo0vDuchQlIP6Z0ZvjT3KtzVI-T4E7RoLJS0",
     "mldsa65_verify": "",
+    "fallback_path": "/",
     "short_id": "0123456789abcdef"
   }
 }
@@ -861,6 +862,29 @@ ACME DNS01 验证字段。如果配置，将禁用其他验证方法。
 
 这些字段分别对应 Xray 的 `mldsa65Seed` 和 `mldsa65Verify`。
 它们补充 REALITY 认证；TLS 密钥交换仍由选中的密钥共享组决定。
+
+#### fallback_path
+
+==仅客户端==
+
+当对端提供对服务器名称有效的证书，但未通过 REALITY 服务端认证时，请求的 HTTP 路径。
+默认为 `/`。允许附带查询字符串，例如 `/news?lang=en`；保留百分号编码的路径和查询参数。
+不接受完整 URL、以 `//` 开头的路径、片段标识符、反斜杠或未转义的空白字符。
+
+客户端通过已有的 TLS 连接发送一次 GET 请求。协商了 HTTP/2 时使用 HTTP/2，
+协商了 HTTP/1.1 或未协商 ALPN 时使用 HTTP/1.1。
+不会跟随重定向、建立新连接或抓取链接。请求结束后仍返回 REALITY 验证失败错误。
+证书验证失败时不会触发此 HTTP 回落。
+
+导航请求头和浏览器格式的 User-Agent 根据 uTLS 指纹选择。
+Chrome、Edge、Firefox、Safari 和 iOS 使用对应指纹的版本；
+其他指纹使用默认 Chromium 指纹的 HTTP 请求头。
+请求头顺序和 HTTP/2 设置仍由 Go 的 HTTP 实现决定。
+
+回落最多持续 15 秒；若连接上下文的剩余期限更短，则使用该期限。
+最多读取 1 MiB 响应正文，不进行解压，随后关闭连接；HTTP 传输层可能额外缓冲部分数据。
+此字段提供与 Xray `spiderX` 初始路径相应的功能，不支持其抓取控制参数。
+查询参数会原样发送给目标。
 
 #### short_id
 

@@ -14939,6 +14939,9 @@
         },
         "mldsa65_verify": {
           "type": "string"
+        },
+        "fallback_path": {
+          "type": "string"
         }
       },
       "additionalProperties": false
