@@ -171,6 +171,7 @@ icon: material/new-box
     "enabled": false,
     "public_key": "jNXHt1yRo0vDuchQlIP6Z0ZvjT3KtzVI-T4E7RoLJS0",
     "mldsa65_verify": "",
+    "fallback_path": "/",
     "short_id": "0123456789abcdef"
   }
 }
@@ -875,6 +876,33 @@ Disabled when empty.
 
 These fields correspond to Xray's `mldsa65Seed` and `mldsa65Verify`. They supplement
 REALITY authentication; TLS key exchange remains determined by the selected key share.
+
+#### fallback_path
+
+==Client only==
+
+HTTP path to request when the peer presents a valid certificate for the server
+name but does not authenticate as a REALITY server. Defaults to `/`. An optional
+query is allowed, for example `/news?lang=en`; percent-encoded paths and query
+parameters are preserved. Full URLs, paths starting with `//`, fragments,
+backslashes, and unescaped whitespace are rejected.
+
+The client makes one GET request over the existing TLS connection, using HTTP/2
+when negotiated, otherwise HTTP/1.1 when negotiated or when ALPN is absent.
+It does not follow redirects, open another connection, or crawl links. It still
+returns a REALITY verification error after the request. Certificate verification
+failures do not trigger this HTTP fallback.
+
+Navigation headers and a browser-style User-Agent are selected from the uTLS
+fingerprint. Chrome, Edge, Firefox, Safari, and iOS use their profile versions;
+other fingerprints use the default Chromium profile for HTTP headers. Header
+ordering and HTTP/2 settings still come from Go's HTTP stack.
+
+Fallback lasts at most 15 seconds, or the remaining connection context deadline
+if shorter. It consumes up to 1 MiB of response body without decompressing it,
+then closes the connection; the HTTP transport may buffer additional bytes.
+This provides the initial-path behavior of Xray's `spiderX`, without its crawling
+parameters. Query parameters are sent to the target unchanged.
 
 #### short_id
 
