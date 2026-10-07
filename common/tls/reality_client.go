@@ -17,12 +17,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"io"
-	mRand "math/rand"
 	"net"
-	"net/http"
-	"strings"
-	"sync/atomic"
 	"time"
 
 	C "github.com/fig0ut/rostra/constant"
@@ -31,13 +26,11 @@ import (
 	"github.com/sagernet/sing/common/debug"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"
-	M "github.com/sagernet/sing/common/metadata"
 	aTLS "github.com/sagernet/sing/common/tls"
 
 	"github.com/cloudflare/circl/sign/mldsa/mldsa65"
 	utls "github.com/metacubex/utls"
 	"golang.org/x/crypto/hkdf"
-	"golang.org/x/net/http2"
 )
 
 var _ ConfigCompat = (*RealityClientConfig)(nil)
@@ -48,6 +41,7 @@ type RealityClientConfig struct {
 	publicKey     []byte
 	shortID       [8]byte
 	mldsa65Verify *mldsa65.PublicKey
+	fallbackPath  string
 }
 
 func NewRealityClient(ctx context.Context, logger logger.ContextLogger, serverAddress string, options option.OutboundTLSOptions) (Config, error) {
@@ -95,7 +89,18 @@ func newRealityClient(ctx context.Context, logger logger.ContextLogger, serverAd
 		}
 		mldsaVerify = key.(*mldsa65.PublicKey)
 	}
-	var config Config = &RealityClientConfig{ctx, uClient.(*UTLSClientConfig), publicKey, shortID, mldsaVerify}
+	fallbackPath, err := parseRealityFallbackPath(options.Reality.FallbackPath)
+	if err != nil {
+		return nil, err
+	}
+	var config Config = &RealityClientConfig{
+		ctx:           ctx,
+		uClient:       uClient.(*UTLSClientConfig),
+		publicKey:     publicKey,
+		shortID:       shortID,
+		mldsa65Verify: mldsaVerify,
+		fallbackPath:  fallbackPath,
+	}
 	if options.KernelRx || options.KernelTx {
 		if !C.IsLinux {
 			return nil, E.New("kTLS is only supported on Linux")
@@ -240,67 +245,21 @@ func (e *RealityClientConfig) ClientHandshake(ctx context.Context, conn net.Conn
 
 	if !verifier.verified {
 		// Finish fallback while we still own the connection; dialers close it on error.
-		realityClientFallback(ctx, uConn, e.uClient.ServerName(), e.uClient.id)
+		realityClientFallback(ctx, uConn, e.uClient.ServerName(), e.fallbackPath, e.uClient.id)
 		return nil, E.New("reality verification failed")
 	}
 
 	return &realityClientConnWrapper{uConn}, nil
 }
 
-func realityClientFallback(ctx context.Context, uConn *utls.UConn, serverName string, fingerprint utls.ClientHelloID) {
-	defer uConn.Close()
-	ctx, cancel := context.WithTimeout(ctx, C.TCPTimeout)
-	defer cancel()
-	deadline, _ := ctx.Deadline()
-	if err := uConn.SetDeadline(deadline); err != nil {
-		return
-	}
-	stop := context.AfterFunc(ctx, func() { uConn.Close() })
-	defer stop()
-	var claimed atomic.Bool
-	dial := func(context.Context, string, string) (net.Conn, error) {
-		if !claimed.CompareAndSwap(false, true) {
-			return nil, net.ErrClosed
-		}
-		return uConn, nil
-	}
-	var transport http.RoundTripper
-	if uConn.ConnectionState().NegotiatedProtocol == "h2" {
-		transport = &http2.Transport{DialTLSContext: func(ctx context.Context, network, addr string, _ *tls.Config) (net.Conn, error) {
-			return dial(ctx, network, addr)
-		}}
-	} else {
-		transport = &http.Transport{DialTLSContext: dial}
-	}
-	client := &http.Client{Transport: transport}
-	defer client.CloseIdleConnections()
-	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
-	serverAddress := M.ParseSocksaddrHostPort(serverName, 0)
-	host := serverAddress.AddrString()
-	if serverAddress.IsIPv6() {
-		host = "[" + host + "]"
-	}
-	request, err := http.NewRequestWithContext(ctx, "GET", "https://"+host, nil)
-	if err != nil {
-		return
-	}
-	request.Header.Set("User-Agent", fingerprint.Client)
-	request.AddCookie(&http.Cookie{Name: "padding", Value: strings.Repeat("0", mRand.Intn(32)+30)})
-	response, err := client.Do(request)
-	if err != nil {
-		return
-	}
-	_, _ = io.Copy(io.Discard, response.Body)
-	response.Body.Close()
-}
-
 func (e *RealityClientConfig) Clone() Config {
 	return &RealityClientConfig{
-		e.ctx,
-		e.uClient.Clone().(*UTLSClientConfig),
-		e.publicKey,
-		e.shortID,
-		e.mldsa65Verify,
+		ctx:           e.ctx,
+		uClient:       e.uClient.Clone().(*UTLSClientConfig),
+		publicKey:     e.publicKey,
+		shortID:       e.shortID,
+		mldsa65Verify: e.mldsa65Verify,
+		fallbackPath:  e.fallbackPath,
 	}
 }
 
