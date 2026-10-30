@@ -21,6 +21,7 @@ func init() {
 		false,
 		"allow unsafe daemon working directory ancestor permissions",
 	)
+	commandRun.MarkFlagsMutuallyExclusive("owned", "allow-unsafe-installation-directory-permissions")
 }
 
 func runService() (bool, error) {
@@ -64,13 +65,13 @@ func (s *windowsService) Execute(arguments []string, requests <-chan svc.ChangeR
 		serviceLogError(E.Cause(err, "secure daemon process"))
 		return
 	}
-	err = prepareWorkingDirectory()
+	err = prepareWorkingDirectory(nil)
 	if err != nil {
 		exitCode = 1
 		serviceLogError(err)
 		return
 	}
-	d, err := newDaemon()
+	d, err := newDaemon(nil)
 	if err != nil {
 		exitCode = 1
 		serviceLogError(err)
