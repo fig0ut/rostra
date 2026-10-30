@@ -15,6 +15,7 @@ on:
         options:
           - All
           - Binary
+          - Desktop-core
           - Android
           - Windows
           - Linux
@@ -685,6 +686,89 @@ jobs:
         with:
           name: binary-windows_${{ matrix.arch }}
           path: "dist"
+  build_desktop:
+    name: Build desktop core (${{ matrix.os }}/${{ matrix.arch }})
+    if: github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Binary' || inputs.build == 'Desktop-core'
+    needs:
+      - calculate_version
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: ubuntu-24.04, os: linux, arch: amd64, suffix: '' }
+          - { runner: ubuntu-24.04-arm, os: linux, arch: arm64, suffix: '' }
+          - { runner: windows-2022, os: windows, arch: amd64, suffix: '.exe' }
+          - { runner: windows-11-arm, os: windows, arch: arm64, suffix: '.exe' }
+    defaults:
+      run:
+        shell: bash
+    env:
+      CGO_ENABLED: "0"
+      GOOS: ${{ matrix.os }}
+      GOARCH: ${{ matrix.arch }}
+      VERSION: ${{ needs.calculate_version.outputs.version }}
+      ASSET: rostra-desktop-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.suffix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.26.10
+          cache: false
+      - name: Patch Go for Windows ARM64
+        if: matrix.os == 'windows' && matrix.arch == 'arm64'
+        run: .github/patch_go_for_windows_arm64.sh
+      - name: Cache Go modules
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/go/pkg/mod
+          key: go-mod-${{ matrix.os }}-${{ hashFiles('go.sum') }}
+          restore-keys: go-mod-${{ matrix.os }}-
+      - name: Set build tags
+        run: |
+          # Desktop updates install one executable. Naive builds also need libcronet.
+          echo "BUILD_TAGS=$(cat release/DEFAULT_BUILD_TAGS_OTHERS)" >> "${GITHUB_ENV}"
+      - name: Set shared ldflags
+        run: |
+          echo "LDFLAGS_SHARED=$(cat release/LDFLAGS)" >> "${GITHUB_ENV}"
+      - name: Test desktop transport and ownership
+        run: |
+          set -xeuo pipefail
+          go test -v -timeout=5m -tags "${BUILD_TAGS}" -ldflags "${LDFLAGS_SHARED}" ./experimental/boxdd
+      - name: Build
+        run: |
+          set -xeuo pipefail
+          mkdir -p dist
+          go build -v -trimpath -o "dist/${ASSET}" -tags "${BUILD_TAGS}" \
+          -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=${VERSION}' ${LDFLAGS_SHARED} -s -w -buildid=" \
+          ./experimental/boxdd
+      - name: Check desktop interface
+        run: |
+          set -euo pipefail
+          "dist/$ASSET" version > core-version.json
+          python - <<'PY'
+          import json
+          import os
+          with open("core-version.json", encoding="utf-8") as source:
+              info = json.load(source)
+          assert info["version"] == os.environ["VERSION"], info
+          assert info["api_version"] == 4, info
+          PY
+          printf '{}\n' | "dist/$ASSET" check
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-desktop-${{ matrix.os }}_${{ matrix.arch }}
+          path: dist/rostra-desktop-*
+          if-no-files-found: error
   build_android_library:
     name: Build Android library (${{ matrix.go_arch }})
     if: vars.ENABLE_UPSTREAM_CLIENT_BUILDS == 'true' && ((github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Android' || inputs.build == 'publish-android') && github.ref != 'refs/heads/oldstable')
@@ -1726,6 +1810,7 @@ jobs:
     if: >-
       !failure() && !cancelled() && github.event_name == 'workflow_dispatch' &&
       (needs.build.result == 'success' || needs.build_darwin.result == 'success' ||
+      needs.build_desktop.result == 'success' ||
       needs.build_windows.result == 'success' || needs.build_android.result == 'success' ||
       needs.build_windows_client.result == 'success' || needs.build_linux_client.result == 'success' ||
       needs.build_apple.result == 'success')
@@ -1740,6 +1825,7 @@ jobs:
       - build
       - build_darwin
       - build_windows
+      - build_desktop
       - build_android_library
       - build_android
       - build_windows_client
@@ -1804,6 +1890,7 @@ jobs:
       - build
       - build_darwin
       - build_windows
+      - build_desktop
       - build_android_library
       - build_android
       - build_windows_client
