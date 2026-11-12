@@ -10,6 +10,7 @@ import (
 	"net"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/fig0ut/rostra/adapter"
@@ -25,6 +26,7 @@ import (
 )
 
 type STDClientConfig struct {
+	access                sync.RWMutex
 	ctx                   context.Context
 	config                *tls.Config
 	serverName            string
@@ -39,44 +41,66 @@ type STDClientConfig struct {
 }
 
 func (c *STDClientConfig) ServerName() string {
+	c.access.RLock()
+	defer c.access.RUnlock()
 	return c.serverName
 }
 
 func (c *STDClientConfig) SetServerName(serverName string) {
+	c.access.Lock()
+	defer c.access.Unlock()
+	config := c.config.Clone()
 	c.serverName = serverName
 	if c.disableSNI {
-		c.config.ServerName = ""
+		config.ServerName = ""
 		if c.verifyServerName {
-			c.config.VerifyConnection = verifyConnection(c.config.RootCAs, c.config.Time, serverName)
+			config.VerifyConnection = verifyConnection(config.RootCAs, config.Time, serverName)
 		} else {
-			c.config.VerifyConnection = nil
+			config.VerifyConnection = nil
 		}
+		c.config = config
 		return
 	}
-	c.config.ServerName = serverName
+	config.ServerName = serverName
+	c.config = config
 }
 
 func (c *STDClientConfig) NextProtos() []string {
+	c.access.RLock()
+	defer c.access.RUnlock()
 	return c.config.NextProtos
 }
 
 func (c *STDClientConfig) SetNextProtos(nextProto []string) {
-	c.config.NextProtos = nextProto
+	c.access.Lock()
+	defer c.access.Unlock()
+	config := c.config.Clone()
+	config.NextProtos = nextProto
+	c.config = config
 }
 
 func (c *STDClientConfig) HandshakeTimeout() time.Duration {
+	c.access.RLock()
+	defer c.access.RUnlock()
 	return c.handshakeTimeout
 }
 
 func (c *STDClientConfig) SetHandshakeTimeout(timeout time.Duration) {
+	c.access.Lock()
+	defer c.access.Unlock()
 	c.handshakeTimeout = timeout
 }
 
 func (c *STDClientConfig) STDConfig() (*STDConfig, error) {
+	c.access.RLock()
+	defer c.access.RUnlock()
 	return c.config, nil
 }
 
 func (c *STDClientConfig) Client(conn net.Conn) (Conn, error) {
+	c.access.RLock()
+	config := c.config
+	c.access.RUnlock()
 	if c.fragment || c.recordFragment {
 		conn = tf.NewConn(conn, c.ctx, c.fragment, c.recordFragment, c.fragmentFallbackDelay)
 	}
@@ -84,10 +108,11 @@ func (c *STDClientConfig) Client(conn net.Conn) (Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	return tls.Client(conn, c.config), nil
+	return tls.Client(conn, config), nil
 }
 
 func (c *STDClientConfig) Clone() Config {
+	c.access.RLock()
 	cloned := &STDClientConfig{
 		ctx:                   c.ctx,
 		config:                c.config.Clone(),
@@ -101,16 +126,23 @@ func (c *STDClientConfig) Clone() Config {
 		spoof:                 c.spoof,
 		spoofMethod:           c.spoofMethod,
 	}
+	c.access.RUnlock()
 	cloned.SetServerName(cloned.serverName)
 	return cloned
 }
 
 func (c *STDClientConfig) ECHConfigList() []byte {
+	c.access.RLock()
+	defer c.access.RUnlock()
 	return c.config.EncryptedClientHelloConfigList
 }
 
 func (c *STDClientConfig) SetECHConfigList(EncryptedClientHelloConfigList []byte) {
-	c.config.EncryptedClientHelloConfigList = EncryptedClientHelloConfigList
+	c.access.Lock()
+	defer c.access.Unlock()
+	config := c.config.Clone()
+	config.EncryptedClientHelloConfigList = EncryptedClientHelloConfigList
+	c.config = config
 }
 
 func NewSTDClient(ctx context.Context, logger logger.ContextLogger, serverAddress string, options option.OutboundTLSOptions) (Config, error) {

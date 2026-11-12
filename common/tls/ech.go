@@ -116,6 +116,22 @@ type ECHClientConfig struct {
 	lastUpdate      time.Time
 }
 
+func (s *ECHClientConfig) ECHConfigList() []byte {
+	s.access.Lock()
+	defer s.access.Unlock()
+	return s.ECHCapableConfig.ECHConfigList()
+}
+
+func (s *ECHClientConfig) SetECHConfigList(echConfigList []byte) {
+	s.access.Lock()
+	defer s.access.Unlock()
+	s.ECHCapableConfig.SetECHConfigList(echConfigList)
+	s.lastUpdate = time.Now()
+	if s.lastTTL <= 0 {
+		s.lastTTL = time.Minute
+	}
+}
+
 func (s *ECHClientConfig) ClientHandshake(ctx context.Context, conn net.Conn) (aTLS.Conn, error) {
 	tlsConn, err := s.fetchAndHandshake(ctx, conn)
 	if err != nil {
@@ -131,60 +147,94 @@ func (s *ECHClientConfig) ClientHandshake(ctx context.Context, conn net.Conn) (a
 func (s *ECHClientConfig) fetchAndHandshake(ctx context.Context, conn net.Conn) (aTLS.Conn, error) {
 	s.access.Lock()
 	defer s.access.Unlock()
-	if len(s.ECHConfigList()) == 0 || s.lastTTL == 0 || time.Since(s.lastUpdate) > s.lastTTL {
-		queryServerName := s.queryServerName
-		if queryServerName == "" {
-			queryServerName = s.ServerName()
-		}
-		message := &mDNS.Msg{
-			MsgHdr: mDNS.MsgHdr{
-				RecursionDesired: true,
-			},
-			Question: []mDNS.Question{
-				{
-					Name:   mDNS.Fqdn(queryServerName),
-					Qtype:  mDNS.TypeHTTPS,
-					Qclass: mDNS.ClassINET,
-				},
-			},
-		}
-		response, err := s.dnsRouter.Exchange(ctx, message, adapter.DNSQueryOptions{})
-		if err != nil {
-			return nil, E.Cause(err, "fetch ECH config list")
-		}
-		if response.Rcode != mDNS.RcodeSuccess {
-			return nil, E.Cause(dns.RcodeError(response.Rcode), "fetch ECH config list")
-		}
-	match:
-		for _, rr := range response.Answer {
-			switch resource := rr.(type) {
-			case *mDNS.HTTPS:
-				for _, value := range resource.Value {
-					if value.Key().String() == "ech" {
-						echConfigList, err := base64.StdEncoding.DecodeString(value.String())
-						if err != nil {
-							return nil, E.Cause(err, "decode ECH config")
-						}
-						s.lastTTL = time.Duration(rr.Header().Ttl) * time.Second
-						s.lastUpdate = time.Now()
-						s.SetECHConfigList(echConfigList)
-						break match
-					}
-				}
-			}
-		}
-		if len(s.ECHConfigList()) == 0 {
-			return nil, E.New("no ECH config found in DNS records")
-		}
+	err := s.fetchECHConfigListLocked(ctx)
+	if err != nil {
+		return nil, err
 	}
 	return s.Client(conn)
 }
 
+func (s *ECHClientConfig) prepareSTDConfig(ctx context.Context) (*tls.Config, error) {
+	s.access.Lock()
+	defer s.access.Unlock()
+	err := s.fetchECHConfigListLocked(ctx)
+	if err != nil {
+		return nil, err
+	}
+	stdConfig, err := s.ECHCapableConfig.STDConfig()
+	if err != nil {
+		return nil, err
+	}
+	return stdConfig.Clone(), nil
+}
+
+func (s *ECHClientConfig) fetchECHConfigListLocked(ctx context.Context) error {
+	if len(s.ECHCapableConfig.ECHConfigList()) > 0 && s.lastTTL > 0 && time.Since(s.lastUpdate) <= s.lastTTL {
+		return nil
+	}
+	if s.dnsRouter == nil {
+		return E.New("DNS router is required to fetch ECH config list")
+	}
+	queryServerName := s.queryServerName
+	if queryServerName == "" {
+		queryServerName = s.ServerName()
+	}
+	message := &mDNS.Msg{
+		MsgHdr: mDNS.MsgHdr{
+			RecursionDesired: true,
+		},
+		Question: []mDNS.Question{
+			{
+				Name:   mDNS.Fqdn(queryServerName),
+				Qtype:  mDNS.TypeHTTPS,
+				Qclass: mDNS.ClassINET,
+			},
+		},
+	}
+	response, err := s.dnsRouter.Exchange(ctx, message, adapter.DNSQueryOptions{})
+	if err != nil {
+		return E.Cause(err, "fetch ECH config list")
+	}
+	if response.Rcode != mDNS.RcodeSuccess {
+		return E.Cause(dns.RcodeError(response.Rcode), "fetch ECH config list")
+	}
+	var (
+		echConfigList []byte
+		ttl           uint32
+	)
+match:
+	for _, rr := range response.Answer {
+		switch resource := rr.(type) {
+		case *mDNS.HTTPS:
+			for _, value := range resource.Value {
+				if value.Key().String() == "ech" {
+					echConfigList, err = base64.StdEncoding.DecodeString(value.String())
+					if err != nil {
+						return E.Cause(err, "decode ECH config")
+					}
+					ttl = rr.Header().Ttl
+					break match
+				}
+			}
+		}
+	}
+	if len(echConfigList) == 0 {
+		return E.New("no ECH config found in DNS records")
+	}
+	s.lastTTL = time.Duration(ttl) * time.Second
+	s.lastUpdate = time.Now()
+	s.ECHCapableConfig.SetECHConfigList(echConfigList)
+	return nil
+}
+
 func (s *ECHClientConfig) Clone() Config {
+	s.access.Lock()
+	defer s.access.Unlock()
 	return &ECHClientConfig{
 		ECHCapableConfig: s.ECHCapableConfig.Clone().(ECHCapableConfig),
 		dnsRouter:        s.dnsRouter,
 		queryServerName:  s.queryServerName,
+		lastTTL:          s.lastTTL,
 		lastUpdate:       s.lastUpdate,
 	}
 }
