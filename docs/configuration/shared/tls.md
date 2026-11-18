@@ -916,7 +916,10 @@ A hexadecimal string with zero to eight digits.
 
 The maximum time difference between the server and the client.
 
-Check disabled if empty.
+Defaults to `1h`. Client clocks must be within this window of the server clock.
+The server retains authenticated ClientHello replay records until their timestamps
+can no longer pass this check. Replayed connections, and new connections when the
+replay cache is full, are forwarded to the handshake server.
 
 #### limit_fallback_upload / limit_fallback_download
 

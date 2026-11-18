@@ -37,7 +37,7 @@ use the appropriate configuration path when validating that installation.
 
 Configuration fields, protocol names, and rule-set formats retain their upstream
 identifiers. Existing configuration may still need changes for independently added
-features or upstream deprecations.
+features or upstream deprecations. REALITY now defaults to a one-hour clock window.
 
 ## Development and releases
 

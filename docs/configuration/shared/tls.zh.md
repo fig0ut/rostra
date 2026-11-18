@@ -898,7 +898,9 @@ Chrome、Edge、Firefox、Safari 和 iOS 使用对应指纹的版本；
 
 服务器和客户端之间的最大时间差。
 
-如果为空则禁用检查。
+默认值为 `1h`。客户端与服务端的时钟差必须在此范围内。
+服务端会保留已认证 ClientHello 的重放记录，直到其时间戳不再通过此检查。
+重放连接，以及重放缓存已满时的新连接，将被转发至握手服务器。
 
 #### limit_fallback_upload / limit_fallback_download
 

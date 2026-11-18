@@ -34,6 +34,8 @@ type RealityServerConfig struct {
 	config           *utls.RealityConfig
 	recordCache      *realityRecordCache
 	handshakeTimeout time.Duration
+	replayCache      *realityReplayCache
+	closeFallback    context.CancelFunc
 }
 
 func NewRealityServer(ctx context.Context, logger log.ContextLogger, options option.InboundTLSOptions) (ServerConfig, error) {
@@ -119,6 +121,11 @@ func NewRealityServer(ctx context.Context, logger log.ContextLogger, options opt
 		tlsConfig.Mldsa65Key = signingKey.Bytes()
 	}
 	tlsConfig.MaxTimeDiff = time.Duration(options.Reality.MaxTimeDifference)
+	if tlsConfig.MaxTimeDiff == 0 {
+		tlsConfig.MaxTimeDiff = realityDefaultMaxTimeDifference
+	} else if tlsConfig.MaxTimeDiff < 0 {
+		return nil, E.New("reality max_time_difference must be positive")
+	}
 	tlsConfig.LimitFallbackUpload, err = parseRealityFallbackLimit(options.Reality.LimitFallbackUpload)
 	if err != nil {
 		return nil, E.Cause(err, "limit_fallback_upload")
@@ -164,15 +171,20 @@ func NewRealityServer(ctx context.Context, logger log.ContextLogger, options opt
 	}
 	recordCache := newRealityRecordCache(ctx, &tlsConfig)
 	tlsConfig.GetPostHandshakeRecordLengths = recordCache.get
+	fallbackContext, closeFallback := context.WithCancel(ctx)
+	tlsConfig.FallbackContext = fallbackContext
 	var config ServerConfig = &RealityServerConfig{
 		ctx:              ctx,
 		config:           &tlsConfig,
 		recordCache:      recordCache,
 		handshakeTimeout: handshakeTimeout,
+		replayCache:      newRealityReplayCache(),
+		closeFallback:    closeFallback,
 	}
 	if options.KernelTx || options.KernelRx {
 		if !C.IsLinux {
 			recordCache.cancel()
+			closeFallback()
 			return nil, E.New("kTLS is only supported on Linux")
 		}
 		config = &KTlSServerConfig{
@@ -242,6 +254,9 @@ func (c *RealityServerConfig) Start() error {
 
 func (c *RealityServerConfig) Close() error {
 	c.recordCache.cancel()
+	if c.closeFallback != nil {
+		c.closeFallback()
+	}
 	return nil
 }
 
@@ -250,27 +265,15 @@ func (c *RealityServerConfig) Server(conn net.Conn) (Conn, error) {
 }
 
 func (c *RealityServerConfig) ServerHandshake(ctx context.Context, conn net.Conn) (Conn, error) {
-	// uTLS uses the context for dialing, but its subsequent reads and copies
-	// are blocking. Cover both sockets, including a stalled camouflage target.
-	stopClient := realityCloseOnCancel(ctx, conn)
-	stopTarget := func() {}
 	config := c.config.Clone()
-	dial := config.DialContext
-	config.DialContext = func(ctx context.Context, network, address string) (net.Conn, error) {
-		target, err := dial(ctx, network, address)
-		if err == nil {
-			stopTarget = realityCloseOnCancel(ctx, target)
+	config.AcceptClientHello = func(hello []byte, clientTime time.Time) bool {
+		now := time.Now()
+		if config.Time != nil {
+			now = config.Time()
 		}
-		return target, err
+		return !c.replayCache.seen(hello, now, clientTime.Add(config.MaxTimeDiff))
 	}
 	tlsConn, err := utls.RealityServer(ctx, conn, config)
-	// Stop and join callbacks before handing a successful connection to callers.
-	stopClient()
-	stopTarget()
-	if ctx.Err() != nil {
-		conn.Close()
-		return nil, ctx.Err()
-	}
 	if err != nil {
 		return nil, err
 	}
@@ -291,11 +294,17 @@ func (c *RealityServerConfig) Clone() Config {
 	config := c.config.Clone()
 	recordCache := newRealityRecordCache(c.ctx, config)
 	config.GetPostHandshakeRecordLengths = recordCache.get
+	var closeFallback context.CancelFunc
+	if config.FallbackContext != nil {
+		config.FallbackContext, closeFallback = context.WithCancel(config.FallbackContext)
+	}
 	return &RealityServerConfig{
 		ctx:              c.ctx,
 		config:           config,
 		recordCache:      recordCache,
 		handshakeTimeout: c.handshakeTimeout,
+		replayCache:      c.replayCache,
+		closeFallback:    closeFallback,
 	}
 }
 
