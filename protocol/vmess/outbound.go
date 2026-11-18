@@ -75,7 +75,7 @@ func NewOutbound(ctx context.Context, router adapter.Router, logger log.ContextL
 		}
 	}
 	if options.Transport != nil {
-		outbound.transport, err = v2ray.NewClientTransport(ctx, outbound.dialer, outbound.serverAddr, common.PtrValueOrDefault(options.Transport), outbound.tlsConfig)
+		outbound.transport, err = v2ray.NewClientTransportWithResolver(ctx, outbound.dialer, outbound.serverAddr, common.PtrValueOrDefault(options.Transport), outbound.tlsConfig, options.DomainResolver)
 		if err != nil {
 			return nil, E.Cause(err, "create client transport: ", options.Transport.Type)
 		}

@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/fig0ut/rostra/adapter"
@@ -28,6 +29,7 @@ import (
 )
 
 type UTLSClientConfig struct {
+	access                sync.RWMutex
 	ctx                   context.Context
 	config                *utls.Config
 	serverName            string
@@ -43,39 +45,56 @@ type UTLSClientConfig struct {
 }
 
 func (c *UTLSClientConfig) ServerName() string {
+	c.access.RLock()
+	defer c.access.RUnlock()
 	return c.serverName
 }
 
 func (c *UTLSClientConfig) SetServerName(serverName string) {
+	c.access.Lock()
+	defer c.access.Unlock()
+	config := c.config.Clone()
 	c.serverName = serverName
 	if c.disableSNI {
-		c.config.ServerName = ""
+		config.ServerName = ""
 		if c.verifyServerName {
-			c.config.InsecureServerNameToVerify = serverName
+			config.InsecureServerNameToVerify = serverName
 		} else {
-			c.config.InsecureServerNameToVerify = ""
+			config.InsecureServerNameToVerify = ""
 		}
+		c.config = config
 		return
 	}
-	c.config.ServerName = serverName
+	config.ServerName = serverName
+	c.config = config
 }
 
 func (c *UTLSClientConfig) NextProtos() []string {
+	c.access.RLock()
+	defer c.access.RUnlock()
 	return c.config.NextProtos
 }
 
 func (c *UTLSClientConfig) SetNextProtos(nextProto []string) {
+	c.access.Lock()
+	defer c.access.Unlock()
 	if len(nextProto) == 1 && nextProto[0] == http2.NextProtoTLS {
 		nextProto = append(nextProto, "http/1.1")
 	}
-	c.config.NextProtos = nextProto
+	config := c.config.Clone()
+	config.NextProtos = nextProto
+	c.config = config
 }
 
 func (c *UTLSClientConfig) HandshakeTimeout() time.Duration {
+	c.access.RLock()
+	defer c.access.RUnlock()
 	return c.handshakeTimeout
 }
 
 func (c *UTLSClientConfig) SetHandshakeTimeout(timeout time.Duration) {
+	c.access.Lock()
+	defer c.access.Unlock()
 	c.handshakeTimeout = timeout
 }
 
@@ -84,6 +103,9 @@ func (c *UTLSClientConfig) STDConfig() (*STDConfig, error) {
 }
 
 func (c *UTLSClientConfig) Client(conn net.Conn) (Conn, error) {
+	c.access.RLock()
+	config := c.config.Clone()
+	c.access.RUnlock()
 	if c.fragment || c.recordFragment {
 		conn = tf.NewConn(conn, c.ctx, c.fragment, c.recordFragment, c.fragmentFallbackDelay)
 	}
@@ -91,14 +113,19 @@ func (c *UTLSClientConfig) Client(conn net.Conn) (Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &utlsALPNWrapper{utlsConnWrapper{utls.UClient(conn, c.config.Clone(), c.id)}, c.config.NextProtos}, nil
+	return &utlsALPNWrapper{utlsConnWrapper{utls.UClient(conn, config, c.id)}, config.NextProtos}, nil
 }
 
 func (c *UTLSClientConfig) SetSessionIDGenerator(generator func(clientHello []byte, sessionID []byte) error) {
-	c.config.SessionIDGenerator = generator
+	c.access.Lock()
+	defer c.access.Unlock()
+	config := c.config.Clone()
+	config.SessionIDGenerator = generator
+	c.config = config
 }
 
 func (c *UTLSClientConfig) Clone() Config {
+	c.access.RLock()
 	cloned := &UTLSClientConfig{
 		ctx:                   c.ctx,
 		config:                c.config.Clone(),
@@ -113,16 +140,23 @@ func (c *UTLSClientConfig) Clone() Config {
 		spoof:                 c.spoof,
 		spoofMethod:           c.spoofMethod,
 	}
+	c.access.RUnlock()
 	cloned.SetServerName(cloned.serverName)
 	return cloned
 }
 
 func (c *UTLSClientConfig) ECHConfigList() []byte {
+	c.access.RLock()
+	defer c.access.RUnlock()
 	return c.config.EncryptedClientHelloConfigList
 }
 
 func (c *UTLSClientConfig) SetECHConfigList(EncryptedClientHelloConfigList []byte) {
-	c.config.EncryptedClientHelloConfigList = EncryptedClientHelloConfigList
+	c.access.Lock()
+	defer c.access.Unlock()
+	config := c.config.Clone()
+	config.EncryptedClientHelloConfigList = EncryptedClientHelloConfigList
+	c.config = config
 }
 
 type utlsConnWrapper struct {
@@ -145,6 +179,7 @@ func (c *utlsConnWrapper) ConnectionState() tls.ConnectionState {
 		SignedCertificateTimestamps: state.SignedCertificateTimestamps,
 		OCSPResponse:                state.OCSPResponse,
 		TLSUnique:                   state.TLSUnique,
+		ECHAccepted:                 state.ECHAccepted,
 	}
 }
 

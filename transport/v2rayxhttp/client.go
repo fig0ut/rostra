@@ -36,6 +36,10 @@ type Client struct {
 }
 
 func NewClient(ctx context.Context, rawDialer N.Dialer, serverAddr M.Socksaddr, options option.V2RayXHTTPOptions, tlsConfig tls.Config) (*Client, error) {
+	return NewClientWithResolver(ctx, rawDialer, serverAddr, options, tlsConfig, nil)
+}
+
+func NewClientWithResolver(ctx context.Context, rawDialer N.Dialer, serverAddr M.Socksaddr, options option.V2RayXHTTPOptions, tlsConfig tls.Config, domainResolver *option.DomainResolveOptions) (*Client, error) {
 	config, err := newConfig(options, serverAddr, tlsConfig)
 	if err != nil {
 		return nil, err
@@ -53,7 +57,7 @@ func NewClient(ctx context.Context, rawDialer N.Dialer, serverAddr M.Socksaddr, 
 		streams: make(map[*streamConn]struct{}),
 	}
 	if options.DownloadSettings != nil {
-		download, pool, err := newDownload(ctx, rawDialer, *options.DownloadSettings)
+		download, pool, err := newDownload(ctx, rawDialer, *options.DownloadSettings, domainResolver)
 		if err != nil {
 			return nil, fmt.Errorf("xhttp: download_settings: %w", err)
 		}

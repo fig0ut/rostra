@@ -49,12 +49,16 @@ func NewServerTransport(ctx context.Context, logger logger.ContextLogger, option
 }
 
 func NewClientTransport(ctx context.Context, dialer N.Dialer, serverAddr M.Socksaddr, options option.V2RayTransportOptions, tlsConfig tls.Config) (adapter.V2RayClientTransport, error) {
+	return NewClientTransportWithResolver(ctx, dialer, serverAddr, options, tlsConfig, nil)
+}
+
+func NewClientTransportWithResolver(ctx context.Context, dialer N.Dialer, serverAddr M.Socksaddr, options option.V2RayTransportOptions, tlsConfig tls.Config, domainResolver *option.DomainResolveOptions) (adapter.V2RayClientTransport, error) {
 	if options.Type == "" {
 		return nil, nil
 	}
 	switch options.Type {
 	case C.V2RayTransportTypeXHTTP, C.V2RayTransportTypeSplitHTTP:
-		return v2rayxhttp.NewClient(ctx, dialer, serverAddr, options.XHTTPOptions, tlsConfig)
+		return v2rayxhttp.NewClientWithResolver(ctx, dialer, serverAddr, options.XHTTPOptions, tlsConfig, domainResolver)
 	case C.V2RayTransportTypeHTTP:
 		return v2rayhttp.NewClient(ctx, dialer, serverAddr, options.HTTPOptions, tlsConfig)
 	case C.V2RayTransportTypeGRPC:

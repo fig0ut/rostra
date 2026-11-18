@@ -12,7 +12,7 @@ import (
 	N "github.com/sagernet/sing/common/network"
 )
 
-func newDownload(ctx context.Context, dialer N.Dialer, o option.V2RayXHTTPDownloadOptions) (clientConfig, *clientPool, error) {
+func newDownload(ctx context.Context, dialer N.Dialer, o option.V2RayXHTTPDownloadOptions, domainResolver *option.DomainResolveOptions) (clientConfig, *clientPool, error) {
 	if o.Server == "" || o.ServerPort == 0 {
 		return clientConfig{}, nil, fmt.Errorf("server and server_port are required")
 	}
@@ -36,7 +36,7 @@ func newDownload(ctx context.Context, dialer N.Dialer, o option.V2RayXHTTPDownlo
 	var err error
 
 	if o.TLS != nil {
-		tc, err = tls.NewClient(ctx, logger.NOP(), o.Server, *o.TLS)
+		tc, err = tls.NewClientWithOptions(tls.ClientOptions{Context: ctx, Logger: logger.NOP(), ServerAddress: o.Server, Options: *o.TLS, DomainResolver: domainResolver})
 		if err != nil {
 			return clientConfig{}, nil, err
 		}
