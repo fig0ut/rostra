@@ -3,7 +3,6 @@
 package tls
 
 import (
-	"bytes"
 	"context"
 	"crypto/aes"
 	"crypto/cipher"
@@ -22,10 +21,9 @@ import (
 	mRand "math/rand"
 	"net"
 	"net/http"
-	"reflect"
 	"strings"
+	"sync/atomic"
 	"time"
-	"unsafe"
 
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/option"
@@ -43,6 +41,7 @@ import (
 var _ ConfigCompat = (*RealityClientConfig)(nil)
 
 type RealityClientConfig struct {
+	ctx       context.Context
 	uClient   *UTLSClientConfig
 	publicKey []byte
 	shortID   [8]byte
@@ -73,15 +72,15 @@ func newRealityClient(ctx context.Context, logger logger.ContextLogger, serverAd
 		return nil, E.New("invalid public_key")
 	}
 	var shortID [8]byte
-	decodedLen, err := hex.Decode(shortID[:], []byte(options.Reality.ShortID))
+	if len(options.Reality.ShortID) > hex.EncodedLen(len(shortID)) {
+		return nil, E.New("invalid short_id: maximum length is 16 hex characters")
+	}
+	_, err = hex.Decode(shortID[:], []byte(options.Reality.ShortID))
 	if err != nil {
 		return nil, E.Cause(err, "decode short_id")
 	}
-	if decodedLen > 8 {
-		return nil, E.New("invalid short_id")
-	}
 
-	var config Config = &RealityClientConfig{uClient.(*UTLSClientConfig), publicKey, shortID}
+	var config Config = &RealityClientConfig{ctx, uClient.(*UTLSClientConfig), publicKey, shortID}
 	if options.KernelRx || options.KernelTx {
 		if !C.IsLinux {
 			return nil, E.New("kTLS is only supported on Linux")
@@ -129,23 +128,16 @@ func (e *RealityClientConfig) Client(conn net.Conn) (Conn, error) {
 }
 
 func (e *RealityClientConfig) ClientHandshake(ctx context.Context, conn net.Conn) (aTLS.Conn, error) {
-	uConfig := e.uClient.config.Clone()
-	var nowTime time.Time
-	if uConfig.Time != nil {
-		nowTime = uConfig.Time()
-	} else {
-		nowTime = time.Now()
-	}
 	verifier := &realityVerifier{
-		serverName:  e.uClient.ServerName(),
-		rootCAs:     uConfig.RootCAs,
-		currentTime: nowTime,
+		serverName: e.uClient.ServerName(),
+		roots:      e.uClient.config.RootCAs,
+		time:       e.uClient.config.Time,
 	}
+	uConfig := e.uClient.config.Clone()
 	uConfig.InsecureSkipVerify = true
 	uConfig.SessionTicketsDisabled = true
 	uConfig.VerifyPeerCertificate = verifier.VerifyPeerCertificate
 	uConn := utls.UClient(conn, uConfig, e.uClient.id)
-	verifier.UConn = uConn
 	err := uConn.BuildHandshakeState()
 	if err != nil {
 		return nil, err
@@ -154,6 +146,13 @@ func (e *RealityClientConfig) ClientHandshake(ctx context.Context, conn net.Conn
 	hello := uConn.HandshakeState.Hello
 	hello.SessionId = make([]byte, 32)
 	copy(hello.Raw[39:], hello.SessionId)
+
+	var nowTime time.Time
+	if uConfig.Time != nil {
+		nowTime = uConfig.Time()
+	} else {
+		nowTime = time.Now()
+	}
 
 	hello.SessionId[0] = 1
 	hello.SessionId[1] = 8
@@ -172,6 +171,9 @@ func (e *RealityClientConfig) ClientHandshake(ctx context.Context, conn net.Conn
 		return nil, E.New("nil KeyShareKeys")
 	}
 	ecdheKey := keyShareKeys.Ecdhe
+	if ecdheKey == nil {
+		ecdheKey = keyShareKeys.MlkemEcdhe
+	}
 	if ecdheKey == nil {
 		return nil, E.New("nil ecdheKey")
 	}
@@ -193,7 +195,6 @@ func (e *RealityClientConfig) ClientHandshake(ctx context.Context, conn net.Conn
 	copy(hello.Raw[39:], hello.SessionId)
 	if debug.Enabled {
 		fmt.Printf("REALITY hello.sessionId: %v\n", hello.SessionId)
-		fmt.Printf("REALITY uConn.AuthKey: %v\n", authKey)
 	}
 
 	err = uConn.HandshakeContext(ctx)
@@ -206,6 +207,7 @@ func (e *RealityClientConfig) ClientHandshake(ctx context.Context, conn net.Conn
 	}
 
 	if !verifier.verified {
+		// Finish fallback while we still own the connection; dialers close it on error.
 		realityClientFallback(ctx, uConn, e.uClient.ServerName(), e.uClient.id)
 		return nil, E.New("reality verification failed")
 	}
@@ -213,15 +215,34 @@ func (e *RealityClientConfig) ClientHandshake(ctx context.Context, conn net.Conn
 	return &realityClientConnWrapper{uConn}, nil
 }
 
-func realityClientFallback(ctx context.Context, uConn net.Conn, serverName string, fingerprint utls.ClientHelloID) {
+func realityClientFallback(ctx context.Context, uConn *utls.UConn, serverName string, fingerprint utls.ClientHelloID) {
 	defer uConn.Close()
-	client := &http.Client{
-		Transport: &http2.Transport{
-			DialTLSContext: func(ctx context.Context, network, addr string, config *tls.Config) (net.Conn, error) {
-				return uConn, nil
-			},
-		},
+	ctx, cancel := context.WithTimeout(ctx, C.TCPTimeout)
+	defer cancel()
+	deadline, _ := ctx.Deadline()
+	if err := uConn.SetDeadline(deadline); err != nil {
+		return
 	}
+	stop := context.AfterFunc(ctx, func() { uConn.Close() })
+	defer stop()
+	var claimed atomic.Bool
+	dial := func(context.Context, string, string) (net.Conn, error) {
+		if !claimed.CompareAndSwap(false, true) {
+			return nil, net.ErrClosed
+		}
+		return uConn, nil
+	}
+	var transport http.RoundTripper
+	if uConn.ConnectionState().NegotiatedProtocol == "h2" {
+		transport = &http2.Transport{DialTLSContext: func(ctx context.Context, network, addr string, _ *tls.Config) (net.Conn, error) {
+			return dial(ctx, network, addr)
+		}}
+	} else {
+		transport = &http.Transport{DialTLSContext: dial}
+	}
+	client := &http.Client{Transport: transport}
+	defer client.CloseIdleConnections()
+	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
 	serverAddress := M.ParseSocksaddrHostPort(serverName, 0)
 	host := serverAddress.AddrString()
 	if serverAddress.IsIPv6() {
@@ -243,6 +264,7 @@ func realityClientFallback(ctx context.Context, uConn net.Conn, serverName strin
 
 func (e *RealityClientConfig) Clone() Config {
 	return &RealityClientConfig{
+		e.ctx,
 		e.uClient.Clone().(*UTLSClientConfig),
 		e.publicKey,
 		e.shortID,
@@ -250,30 +272,40 @@ func (e *RealityClientConfig) Clone() Config {
 }
 
 type realityVerifier struct {
-	*utls.UConn
-	serverName  string
-	rootCAs     *x509.CertPool
-	currentTime time.Time
-	authKey     []byte
-	verified    bool
+	serverName string
+	roots      *x509.CertPool
+	time       func() time.Time
+	authKey    []byte
+	verified   bool
 }
 
 func (c *realityVerifier) VerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
-	p, _ := reflect.TypeFor[utls.Conn]().FieldByName("peerCertificates")
-	certs := *(*([]*x509.Certificate))(unsafe.Add(unsafe.Pointer(c.Conn), p.Offset))
+	if len(rawCerts) == 0 {
+		return E.New("reality: missing peer certificate")
+	}
+	certs := make([]*x509.Certificate, len(rawCerts))
+	for i, raw := range rawCerts {
+		cert, err := x509.ParseCertificate(raw)
+		if err != nil {
+			return err
+		}
+		certs[i] = cert
+	}
 	if pub, ok := certs[0].PublicKey.(ed25519.PublicKey); ok {
 		h := hmac.New(sha512.New, c.authKey)
 		h.Write(pub)
-		if bytes.Equal(h.Sum(nil), certs[0].Signature) {
+		if hmac.Equal(h.Sum(nil), certs[0].Signature) {
 			c.verified = true
 			return nil
 		}
 	}
 	opts := x509.VerifyOptions{
-		Roots:         c.rootCAs,
-		CurrentTime:   c.currentTime,
 		DNSName:       c.serverName,
+		Roots:         c.roots,
 		Intermediates: x509.NewCertPool(),
+	}
+	if c.time != nil {
+		opts.CurrentTime = c.time()
 	}
 	for _, cert := range certs[1:] {
 		opts.Intermediates.AddCert(cert)
