@@ -42,17 +42,23 @@ type Daemon struct {
 	peerAccess              sync.Mutex
 	peerConnections         map[peerConnection]peerIdentity
 	platform                daemonPlatform
+	owner                   *ownedParent
 }
 
-func newDaemon() (*Daemon, error) {
+func newDaemon(owner *ownedParent) (*Daemon, error) {
 	restoreLocale()
 	ctx := include.Context(context.Background())
 	d := &Daemon{
 		ctx:                     ctx,
 		logger:                  log.StdLogger(),
 		runtimeWorkingDirectory: workingDirectory,
+		owner:                   owner,
 	}
-	platformInterface, err := newPlatformInterface(d)
+	var platformInterface daemonPlatform
+	var err error
+	if owner == nil {
+		platformInterface, err = newPlatformInterface(d)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +86,12 @@ func newDaemon() (*Daemon, error) {
 		grpc.ChainUnaryInterceptor(newUnaryAuthorizeInterceptor(authorizer), daemon.UnaryLocaleInterceptor),
 		grpc.ChainStreamInterceptor(newStreamAuthorizeInterceptor(authorizer), daemon.StreamLocaleInterceptor),
 	}
-	platformOptions, err := platformServerOptions(d)
+	var platformOptions []grpc.ServerOption
+	if owner != nil {
+		platformOptions = []grpc.ServerOption{grpc.Creds(&ownedCredentials{daemon: d, parent: owner})}
+	} else {
+		platformOptions, err = platformServerOptions(d)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +112,9 @@ func newDaemon() (*Daemon, error) {
 }
 
 func (d *Daemon) listen() (net.Listener, error) {
+	if d.owner != nil {
+		return listenOwnedEndpoint(socketPath, d.owner)
+	}
 	if listenAddress != "" {
 		d.logger.Warn("listening on TCP address ", listenAddress, ": development only, no access control")
 		return net.Listen("tcp", listenAddress)

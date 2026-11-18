@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"time"
 
 	C "github.com/fig0ut/rostra/constant"
-	"github.com/fig0ut/rostra/daemon"
 	"github.com/fig0ut/rostra/log"
 
 	"github.com/sagernet/sing/common"
@@ -20,20 +18,6 @@ const serviceName = "sing-box-daemon"
 var mainCommand = &cobra.Command{
 	Use:     serviceName,
 	Version: C.Version,
-}
-
-var commandVersion = &cobra.Command{
-	Use:   "version",
-	Short: "Print the daemon version",
-	Args:  cobra.NoArgs,
-	Run: func(command *cobra.Command, args []string) {
-		fmt.Println("sing-box-daemon version", C.Version)
-		fmt.Println("core api version", daemon.APIVersion)
-	},
-}
-
-func init() {
-	mainCommand.AddCommand(commandVersion)
 }
 
 func main() {

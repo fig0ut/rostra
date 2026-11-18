@@ -33,7 +33,10 @@ func (d *Daemon) installUpdate(identity peerIdentity, installerPath string) (*In
 	if installerPath == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing update installer path")
 	}
-	platform := d.platform.(*windowsPlatformInterface)
+	platform, supported := d.platform.(*windowsPlatformInterface)
+	if !supported {
+		return nil, status.Error(codes.Unimplemented, "the owning application manages desktop core updates")
+	}
 	platform.updateAccess.Lock()
 	if platform.updateInProgress {
 		platform.updateAccess.Unlock()
