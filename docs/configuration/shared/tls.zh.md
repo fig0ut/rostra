@@ -104,10 +104,21 @@ icon: material/new-box
       ... // 拨号字段
     },
     "private_key": "UuMBgl7MXTPx9inmQp2UC7Jcnwc6XYbwDNebonM-FCc",
+    "mldsa65_seed": "",
     "short_id": [
       "0123456789abcdef"
     ],
-    "max_time_difference": "1m"
+    "max_time_difference": "1m",
+    "limit_fallback_upload": {
+      "after_bytes": 0,
+      "bytes_per_sec": 0,
+      "burst_bytes_per_sec": 0
+    },
+    "limit_fallback_download": {
+      "after_bytes": 0,
+      "bytes_per_sec": 0,
+      "burst_bytes_per_sec": 0
+    }
   }
 }
 ```
@@ -159,6 +170,8 @@ icon: material/new-box
   "reality": {
     "enabled": false,
     "public_key": "jNXHt1yRo0vDuchQlIP6Z0ZvjT3KtzVI-T4E7RoLJS0",
+    "mldsa65_verify": "",
+    "fallback_path": "/",
     "short_id": "0123456789abcdef"
   }
 }
@@ -800,6 +813,16 @@ ACME DNS01 验证字段。如果配置，将禁用其他验证方法。
 
 握手服务器地址和 [拨号参数](/zh/configuration/shared/dial/)。
 
+服务器还会通过配置的拨号器探测此目标，采样 TLS 1.3 握手后的记录大小，
+并在通过认证的 REALITY 连接上发送相同大小的填充记录。
+探测使用正常的证书校验和配置的证书存储，分别采样不使用 ALPN、HTTP/1.1 和 HTTP/2 的情况。
+服务器启动时会发起三次探测。
+
+采样结果缓存一小时，按需刷新。每次探测最多耗时 10 秒，其中握手后的观察时间最多为 5 秒。
+需要新样本的连接可能会在其握手超时范围内等待探测完成。
+失败的探测会在一分钟后按需重试；没有有效样本时，连接继续进行，但不发送这些额外记录。
+此功能匹配记录大小，不提供会话恢复或应用行为模拟。
+
 #### private_key
 
 ==仅服务器==
@@ -816,6 +839,53 @@ ACME DNS01 验证字段。如果配置，将禁用其他验证方法。
 
 公钥，由 `rostra generate reality-keypair` 生成。
 
+#### mldsa65_seed
+
+==仅服务端==
+
+可选的 ML-DSA-65 签名种子，为使用无填充 base64url 编码的 32 字节数据。
+使用 `rostra generate reality-mldsa65-keypair` 生成独立的种子和验证公钥。
+种子必须与 `private_key` 不同，并且必须保密。
+
+启用后将增加与 Xray 兼容的后量子服务端认证。额外签名占用 3309 字节，
+握手目标的证书数据必须有足够空间容纳它。
+未配置 `mldsa65_verify` 的客户端仍可使用原有 REALITY 认证。留空时禁用。
+
+#### mldsa65_verify
+
+==仅客户端==
+
+可选的 ML-DSA-65 验证公钥，为使用无填充 base64url 编码的 1952 字节数据。
+使用服务端运行 `rostra generate reality-mldsa65-keypair` 时输出的 `Verify` 值。
+配置后，REALITY 连接必须提供绑定证书、ClientHello 和 ServerHello 的有效签名。
+缺少签名或签名无效时拒绝连接。留空时禁用。
+
+这些字段分别对应 Xray 的 `mldsa65Seed` 和 `mldsa65Verify`。
+它们补充 REALITY 认证；TLS 密钥交换仍由选中的密钥共享组决定。
+
+#### fallback_path
+
+==仅客户端==
+
+当对端提供对服务器名称有效的证书，但未通过 REALITY 服务端认证时，请求的 HTTP 路径。
+默认为 `/`。允许附带查询字符串，例如 `/news?lang=en`；保留百分号编码的路径和查询参数。
+不接受完整 URL、以 `//` 开头的路径、片段标识符、反斜杠或未转义的空白字符。
+
+客户端通过已有的 TLS 连接发送一次 GET 请求。协商了 HTTP/2 时使用 HTTP/2，
+协商了 HTTP/1.1 或未协商 ALPN 时使用 HTTP/1.1。
+不会跟随重定向、建立新连接或抓取链接。请求结束后仍返回 REALITY 验证失败错误。
+证书验证失败时不会触发此 HTTP 回落。
+
+导航请求头和浏览器格式的 User-Agent 根据 uTLS 指纹选择。
+Chrome、Edge、Firefox、Safari 和 iOS 使用对应指纹的版本；
+其他指纹使用默认 Chromium 指纹的 HTTP 请求头。
+请求头顺序和 HTTP/2 设置仍由 Go 的 HTTP 实现决定。
+
+回落最多持续 15 秒；若连接上下文的剩余期限更短，则使用该期限。
+最多读取 1 MiB 响应正文，不进行解压，随后关闭连接；HTTP 传输层可能额外缓冲部分数据。
+此字段提供与 Xray `spiderX` 初始路径相应的功能，不支持其抓取控制参数。
+查询参数会原样发送给目标。
+
 #### short_id
 
 ==必填==
@@ -829,3 +899,23 @@ ACME DNS01 验证字段。如果配置，将禁用其他验证方法。
 服务器和客户端之间的最大时间差。
 
 如果为空则禁用检查。
+
+#### limit_fallback_upload / limit_fallback_download
+
+==仅服务器==
+
+可选的握手目标回落连接带宽限制。上传方向为客户端到目标，下载方向为目标到客户端。
+每个连接、每个方向独立限速，不是服务器总带宽限制。
+通过认证的 REALITY 隧道流量和目标探测不受影响。
+
+| 字段 | 含义 |
+| --- | --- |
+| `after_bytes` | 回落转发开始后不受限速的初始字节数，默认为 `0`。按读取块计数，实际阈值可能多出一个读取块。 |
+| `bytes_per_sec` | 持续速率，单位为字节/秒。`0` 表示禁用该方向的限速，其他字段此时不生效。 |
+| `burst_bytes_per_sec` | 令牌桶容量，单位为字节，字段名与 Xray 对应。留空或小于 `bytes_per_sec` 时，实际容量为 `bytes_per_sec`。桶初始为满。 |
+
+所有值均须为不超过 `9223372036854775807` 的非负整数。
+默认不限制任何方向。回落复制开始前已经转发的初始握手字节不计入这些限制。
+
+这两个字段对应 Xray 的 `limitFallbackUpload` 和 `limitFallbackDownload`。
+限速可能使回落连接的行为与直连目标不同，请按带宽控制需求启用。

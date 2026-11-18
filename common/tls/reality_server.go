@@ -3,11 +3,13 @@
 package tls
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"math"
 	"net"
 	"time"
 
@@ -21,13 +23,16 @@ import (
 	N "github.com/sagernet/sing/common/network"
 	"github.com/sagernet/sing/common/ntp"
 
+	"github.com/cloudflare/circl/sign/mldsa/mldsa65"
 	utls "github.com/metacubex/utls"
 )
 
 var _ ServerConfigCompat = (*RealityServerConfig)(nil)
 
 type RealityServerConfig struct {
+	ctx              context.Context
 	config           *utls.RealityConfig
+	recordCache      *realityRecordCache
 	handshakeTimeout time.Duration
 }
 
@@ -102,7 +107,26 @@ func NewRealityServer(ctx context.Context, logger log.ContextLogger, options opt
 		return nil, E.New("invalid private key")
 	}
 	tlsConfig.PrivateKey = privateKey
+	if options.Reality.MLDSA65Seed != "" {
+		seed, err := base64.RawURLEncoding.DecodeString(options.Reality.MLDSA65Seed)
+		if err != nil || len(seed) != mldsa65.SeedSize {
+			return nil, E.New("invalid mldsa65_seed: expected 32 bytes in unpadded base64url")
+		}
+		if bytes.Equal(seed, privateKey) {
+			return nil, E.New("mldsa65_seed must differ from private_key")
+		}
+		_, signingKey := mldsa65.NewKeyFromSeed((*[mldsa65.SeedSize]byte)(seed))
+		tlsConfig.Mldsa65Key = signingKey.Bytes()
+	}
 	tlsConfig.MaxTimeDiff = time.Duration(options.Reality.MaxTimeDifference)
+	tlsConfig.LimitFallbackUpload, err = parseRealityFallbackLimit(options.Reality.LimitFallbackUpload)
+	if err != nil {
+		return nil, E.Cause(err, "limit_fallback_upload")
+	}
+	tlsConfig.LimitFallbackDownload, err = parseRealityFallbackLimit(options.Reality.LimitFallbackDownload)
+	if err != nil {
+		return nil, E.Cause(err, "limit_fallback_download")
+	}
 
 	tlsConfig.ShortIds = make(map[[8]byte]bool)
 	if len(options.Reality.ShortID) == 0 {
@@ -138,12 +162,17 @@ func NewRealityServer(ctx context.Context, logger log.ContextLogger, options opt
 	} else {
 		handshakeTimeout = C.TCPTimeout
 	}
+	recordCache := newRealityRecordCache(ctx, &tlsConfig)
+	tlsConfig.GetPostHandshakeRecordLengths = recordCache.get
 	var config ServerConfig = &RealityServerConfig{
+		ctx:              ctx,
 		config:           &tlsConfig,
+		recordCache:      recordCache,
 		handshakeTimeout: handshakeTimeout,
 	}
 	if options.KernelTx || options.KernelRx {
 		if !C.IsLinux {
+			recordCache.cancel()
 			return nil, E.New("kTLS is only supported on Linux")
 		}
 		config = &KTlSServerConfig{
@@ -154,6 +183,21 @@ func NewRealityServer(ctx context.Context, logger log.ContextLogger, options opt
 		}
 	}
 	return config, nil
+}
+
+func parseRealityFallbackLimit(options *option.RealityLimitFallbackOptions) (utls.RealityLimitFallback, error) {
+	if options == nil {
+		return utls.RealityLimitFallback{}, nil
+	}
+	// uTLS converts these values to signed counters and bucket capacities.
+	if options.AfterBytes > math.MaxInt64 || options.BytesPerSec > math.MaxInt64 || options.BurstBytesPerSec > math.MaxInt64 {
+		return utls.RealityLimitFallback{}, E.New("values must not exceed ", uint64(math.MaxInt64))
+	}
+	return utls.RealityLimitFallback{
+		AfterBytes:       options.AfterBytes,
+		BytesPerSec:      options.BytesPerSec,
+		BurstBytesPerSec: options.BurstBytesPerSec,
+	}, nil
 }
 
 func (c *RealityServerConfig) ServerName() string {
@@ -190,10 +234,14 @@ func (c *RealityServerConfig) Client(conn net.Conn) (Conn, error) {
 }
 
 func (c *RealityServerConfig) Start() error {
+	for serverName := range c.config.ServerNames {
+		c.recordCache.warm(serverName)
+	}
 	return nil
 }
 
 func (c *RealityServerConfig) Close() error {
+	c.recordCache.cancel()
 	return nil
 }
 
@@ -240,8 +288,13 @@ func realityCloseOnCancel(ctx context.Context, conn net.Conn) func() {
 }
 
 func (c *RealityServerConfig) Clone() Config {
+	config := c.config.Clone()
+	recordCache := newRealityRecordCache(c.ctx, config)
+	config.GetPostHandshakeRecordLengths = recordCache.get
 	return &RealityServerConfig{
-		config:           c.config.Clone(),
+		ctx:              c.ctx,
+		config:           config,
+		recordCache:      recordCache,
 		handshakeTimeout: c.handshakeTimeout,
 	}
 }
