@@ -1,7 +1,7 @@
 # outbound-set
 
-An outbound-set contains outbound definitions shared by [Selector](/configuration/outbound/selector/)
-and [URLTest](/configuration/outbound/urltest/) outbounds.
+An outbound-set contains outbound definitions shared by [Selector](/configuration/outbound/selector/), [URLTest](/configuration/outbound/urltest/),
+and [LoadBalance](/configuration/outbound/loadbalance/) outbounds.
 
 Configure outbound-sets in the top-level `outbound_set` field.
 
@@ -104,7 +104,7 @@ Missing dependencies and circular dependencies are rejected.
 
 Nonempty list of [Outbound](/configuration/outbound/) definitions.
 
-Each outbound must have a unique, nonempty `tag`. Selector and URLTest outbounds are not supported as members.
+Each outbound must have a unique, nonempty `tag`. Selector, URLTest, and LoadBalance outbounds are not supported as members.
 
 ### Local or Remote Fields
 
@@ -178,7 +178,7 @@ the first refresh occurs after this interval. Failed updates are retried after t
 An update is applied only after its members, overrides and dependencies have been validated and new proxies have started successfully.
 Failed updates retain the running set and its cached source.
 
-Selector and URLTest membership is refreshed with the new members. A selector keeps its selected tag if it still exists;
+Selector, URLTest, and LoadBalance membership is refreshed with the new members. A selector keeps its selected tag if it still exists;
 otherwise it uses its configured `default` if available, then the first member.
 A missing configured default is an error during initial configuration loading, but is allowed when members change during a refresh.
 

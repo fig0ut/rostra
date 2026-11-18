@@ -276,3 +276,17 @@ func TestSchema(t *testing.T) {
 	require.Contains(t, generated["properties"], "outbound_set")
 	require.Contains(t, generated["$defs"], "OutboundSet")
 }
+
+func TestExpandLoadBalance(t *testing.T) {
+	ctx, options := parse(t, `{
+ "outbound_set":[{"tag":"set","outbounds":[`+member+`]}],
+ "outbounds":[{"type":"loadbalance","tag":"balance","outbounds":["set/node"],"outbound_set":["set","set"],"strategy":"round_robin"}]
+ }`)
+	result, err := expand(ctx, options)
+	require.NoError(t, err)
+	group := result.Outbounds[0].Options.(*option.LoadBalanceOutboundOptions)
+	require.Equal(t, []string{"set/node"}, group.Outbounds)
+	require.Empty(t, group.OutboundSet)
+	require.Equal(t, "round_robin", group.Strategy)
+	require.Equal(t, []string{"set", "set"}, []string(options.Outbounds[0].Options.(*option.LoadBalanceOutboundOptions).OutboundSet))
+}
