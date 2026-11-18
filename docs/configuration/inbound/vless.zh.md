@@ -14,6 +14,7 @@
       "flow": ""
     }
   ],
+  "decryption": "none",
   "tls": {},
   "multiplex": {},
   "transport": {}
@@ -45,6 +46,12 @@ VLESS 子协议。
 可用值：
 
 * `xtls-rprx-vision`
+
+#### decryption
+
+VLESS 加密，默认禁用。
+
+配置参见 [VLESS 加密](../shared/vless-encryption.md)。
 
 #### tls
 
