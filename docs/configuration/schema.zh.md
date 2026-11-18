@@ -13,7 +13,7 @@ sing-box 为配置文件提供 JSON Schema Draft 2020-12。
 
 ```json
 {
-  "$schema": "https://sing-box.sagernet.org/schema.json"
+  "$schema": "https://github.com/fig0ut/rostra/raw/HEAD/docs/schema.json"
 }
 ```
 
@@ -24,14 +24,14 @@ sing-box 为配置文件提供 JSON Schema Draft 2020-12。
 兼容编辑器使用的 Schema URI。
 
 随本文档发布的 Schema 位于
-[sing-box.sagernet.org/schema.json](https://sing-box.sagernet.org/schema.json)。
+[Rostra schema](https://github.com/fig0ut/rostra/raw/HEAD/docs/schema.json)。
 
 ### 生成
 
 使用以下命令生成与已安装的二进制文件匹配的 Schema：
 
 ```bash
-sing-box schema -o schema.json
+rostra schema -o schema.json
 ```
 
 未指定 `--output` 时，Schema 将写入标准输出。

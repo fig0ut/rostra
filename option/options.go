@@ -5,7 +5,8 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/sagernet/sing-box/schema"
+	"github.com/fig0ut/rostra/schema"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	F "github.com/sagernet/sing/common/format"
 	"github.com/sagernet/sing/common/json"
@@ -14,7 +15,7 @@ import (
 type _Options struct {
 	RawMessage           json.RawMessage       `json:"-"`
 	CommentsSet          *json.CommentSet      `json:"-"`
-	Schema               string                `json:"$schema,omitempty" examples:"https://sing-box.sagernet.org/schema.json"`
+	Schema               string                `json:"$schema,omitempty" examples:"https://github.com/fig0ut/rostra/raw/HEAD/docs/schema.json"`
 	Log                  *LogOptions           `json:"log,omitempty"`
 	DNS                  *DNSOptions           `json:"dns,omitempty"`
 	NTP                  *NTPOptions           `json:"ntp,omitempty"`
@@ -51,7 +52,7 @@ func (o *Options) UnmarshalJSONContext(ctx context.Context, content []byte) erro
 func (o Options) DescribeSchema(builder schema.Builder) (*schema.Node, error) {
 	node := schema.StrictObject()
 	node.SchemaURI = "https://json-schema.org/draft/2020-12/schema"
-	node.ID = "https://sing-box.sagernet.org/schema.json"
+	node.ID = "https://github.com/fig0ut/rostra/raw/HEAD/docs/schema.json"
 	err := builder.FlattenStruct(node, reflect.TypeFor[Options]())
 	if err != nil {
 		return nil, err

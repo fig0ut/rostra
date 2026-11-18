@@ -84,7 +84,7 @@ Both if empty.
 | Method        | Password Format                                |
 |---------------|------------------------------------------------|
 | none          | /                                              |
-| 2022 methods  | `sing-box generate rand --base64 <Key Length>` |
+| 2022 methods  | `rostra generate rand --base64 <Key Length>` |
 | other methods | any string                                     |
 
 #### managed

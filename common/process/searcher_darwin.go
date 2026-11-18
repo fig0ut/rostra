@@ -9,7 +9,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
 )
 
 var _ Searcher = (*darwinSearcher)(nil)

@@ -83,7 +83,7 @@ wg genkey
 echo "private key" || wg pubkey
 ```
 
-or `sing-box generate wg-keypair`.
+or `rostra generate wg-keypair`.
 
 #### peers
 

@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/option"
 
 	"golang.org/x/net/http/httpguts"
 	"golang.org/x/net/http2/hpack"

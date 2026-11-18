@@ -4,7 +4,8 @@ import (
 	"net/netip"
 	"strconv"
 
-	"github.com/sagernet/sing-box/schema"
+	"github.com/fig0ut/rostra/schema"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	F "github.com/sagernet/sing/common/format"
 	"github.com/sagernet/sing/common/json"

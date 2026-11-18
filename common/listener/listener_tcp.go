@@ -7,10 +7,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/common/redir"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/log"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/common/redir"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/log"
+
 	"github.com/sagernet/sing/common/control"
 	E "github.com/sagernet/sing/common/exceptions"
 	M "github.com/sagernet/sing/common/metadata"

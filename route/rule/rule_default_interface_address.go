@@ -4,7 +4,8 @@ import (
 	"net/netip"
 	"strings"
 
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
+
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing/common"
 	"github.com/sagernet/sing/common/json/badoption"

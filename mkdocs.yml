@@ -1,16 +1,13 @@
-site_name: sing-box
-site_url: https://sing-box.sagernet.org/
-site_author: nekohasekai
-repo_url: https://github.com/SagerNet/sing-box
-repo_name: SagerNet/sing-box
+site_name: Rostra
+site_author: fig0ut
+repo_url: https://github.com/fig0ut/rostra
+repo_name: fig0ut/rostra
 copyright: Copyright &copy; 2022 nekohasekai
-site_description: The universal proxy platform.
+site_description: An independently maintained fork of sing-box.
 remote_branch: docs
 edit_uri: ""
 theme:
   name: material
-  logo: assets/icon.svg
-  favicon: assets/icon.svg
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
@@ -40,21 +37,23 @@ theme:
     - content.code.select
     - content.code.annotate
   icon:
+    logo: material/router-network
     admonition:
       question: material/new-box
 nav:
   - Home:
       - index.md
-      - Change Log: changelog.md
+      - Migration to Rostra: rostra-migration.md
+      - Upstream Change Log: changelog.md
       - Migration: migration.md
       - Deprecated: deprecated.md
       - Support: support.md
-      - Sponsors: sponsors.md
+      - Upstream Sponsors: sponsors.md
   - Installation:
-      - Package Manager: installation/package-manager.md
+      - Upstream Package Managers: installation/package-manager.md
       - Docker: installation/docker.md
       - Build from source: installation/build-from-source.md
-  - Graphical Clients:
+  - Upstream Graphical Clients:
       - clients/index.md
       - Android:
           - clients/android/index.md
@@ -215,7 +214,7 @@ nav:
           - LoadBalance: configuration/outbound/loadbalance.md
       - Service:
           - configuration/service/index.md
-          - sing-box API: configuration/service/api.md
+          - Rostra API: configuration/service/api.md
           - DERP: configuration/service/derp.md
           - Resolved: configuration/service/resolved.md
           - SSM API: configuration/service/ssm-api.md
@@ -261,7 +260,7 @@ markdown_extensions:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/SagerNet/sing-box
+      link: https://github.com/fig0ut/rostra
   generator: false
 plugins:
   - search
@@ -285,7 +284,7 @@ plugins:
             Support: 支持
 
             Installation: 安装
-            Package Manager: 包管理器
+            Upstream Package Managers: 上游包管理器
             Build from source: 从源代码构建
 
             Graphical Clients: 图形界面客户端

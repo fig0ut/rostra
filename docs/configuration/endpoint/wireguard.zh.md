@@ -85,7 +85,7 @@ wg genkey
 echo "private key" || wg pubkey
 ```
 
-或 `sing-box generate wg-keypair`.
+或 `rostra generate wg-keypair`.
 
 #### peers
 

@@ -3,8 +3,9 @@ package route
 import (
 	"sync"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-tun"
+	"github.com/fig0ut/rostra/adapter"
+
+	tun "github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing/common"
 )
 

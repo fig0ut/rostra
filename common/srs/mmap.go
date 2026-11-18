@@ -9,8 +9,9 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/sagernet/sing-box/common/ipset"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/common/ipset"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/sing/common/domain"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/varbin"
@@ -144,7 +145,8 @@ func (b *mmapBlob) size() uint64 {
 func (b *mmapBlob) write(writer *bufio.Writer) error {
 	switch b.kind {
 	case mmapBlobSuccinct:
-		err := writeMmapUint64(writer,
+		err := writeMmapUint64(
+			writer,
 			uint64(len(b.matcher.Leaves)),
 			uint64(len(b.matcher.LabelBitmap)),
 			uint64(len(b.matcher.Labels)),

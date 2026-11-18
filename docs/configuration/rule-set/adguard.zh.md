@@ -8,7 +8,7 @@ sing-box 支持其他项目的一些规则集格式，这些格式无法完全�
 
 ## 转换
 
-使用 `sing-box rule-set convert --type adguard [--output <file-name>.srs] <file-name>.txt` 以转换为二进制规则集。
+使用 `rostra rule-set convert --type adguard [--output <file-name>.srs] <file-name>.txt` 以转换为二进制规则集。
 
 ## 性能
 

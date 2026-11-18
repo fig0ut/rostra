@@ -9,9 +9,10 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/sagernet/sing-box/common/badversion"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/experimental/libbox"
+	"github.com/fig0ut/rostra/common/badversion"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/experimental/libbox"
+
 	E "github.com/sagernet/sing/common/exceptions"
 
 	"github.com/tailscale/go-winio"

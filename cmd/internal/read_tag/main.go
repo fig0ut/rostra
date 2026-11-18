@@ -4,9 +4,9 @@ import (
 	"flag"
 	"os"
 
-	"github.com/sagernet/sing-box/cmd/internal/build_shared"
-	"github.com/sagernet/sing-box/common/badversion"
-	"github.com/sagernet/sing-box/log"
+	"github.com/fig0ut/rostra/cmd/internal/build_shared"
+	"github.com/fig0ut/rostra/common/badversion"
+	"github.com/fig0ut/rostra/log"
 )
 
 var (

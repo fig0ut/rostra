@@ -3,7 +3,8 @@ package option
 import (
 	"reflect"
 
-	"github.com/sagernet/sing-box/schema"
+	"github.com/fig0ut/rostra/schema"
+
 	"github.com/sagernet/sing/common/json"
 	"github.com/sagernet/sing/common/uot"
 )

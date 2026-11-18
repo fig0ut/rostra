@@ -3,7 +3,8 @@ package masque
 import (
 	"net/netip"
 
-	transportHTTP "github.com/sagernet/sing-box/transport/http"
+	transportHTTP "github.com/fig0ut/rostra/transport/http"
+
 	"github.com/sagernet/sing/common/buf"
 	E "github.com/sagernet/sing/common/exceptions"
 

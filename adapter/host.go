@@ -5,8 +5,9 @@ import (
 	"net/netip"
 	"sync/atomic"
 
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-tun"
+	"github.com/fig0ut/rostra/log"
+
+	tun "github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing-tun/gtcpip/header"
 	"github.com/sagernet/sing/common/byteformats"
 	M "github.com/sagernet/sing/common/metadata"

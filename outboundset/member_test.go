@@ -9,10 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sagernet/sing-box/adapter"
-	OB "github.com/sagernet/sing-box/adapter/outbound"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/adapter"
+	OB "github.com/fig0ut/rostra/adapter/outbound"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/sing-tun"
 	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"

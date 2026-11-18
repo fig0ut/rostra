@@ -4,24 +4,15 @@ icon: material/file-code
 
 # 从源代码构建
 
-## :material-graph: 要求
+## 环境要求
 
-### sing-box 1.11
+使用满足 `go.mod` 要求的 Go 工具链（目前为 Go 1.25.5 或更新版本）。
+发布工作流单独指定工具链版本。
 
-* Go 1.23.1 - ~
-
-### sing-box 1.10
-
-* Go 1.20.0 - ~
-* Go 1.21.0 - ~ with tag `with_ech` enabled
-
-### sing-box 1.9
-
-* Go 1.18.5 - 1.22.x
-* Go 1.20.0 - 1.22.x with tag `with_quic`, or `with_utls` enabled
-* Go 1.21.0 - 1.22.x with tag `with_ech` enabled
-
-您可以从 https://go.dev/doc/install 下载并安装 Go，推荐使用最新版本。
+```bash
+git clone https://github.com/fig0ut/rostra.git
+cd rostra
+```
 
 ## :material-fast-forward: 快速开始
 
@@ -44,7 +35,7 @@ TAGS="tag_a tag_b" make
 or
 
 ```bash
-go build -tags "tag_a tag_b" ./cmd/sing-box
+go build -tags "tag_a tag_b" ./cmd/rostra
 ```
 
 ## :material-folder-settings: 构建标记
@@ -109,13 +100,13 @@ NaiveProxy 出站需要根据目标平台进行特殊的构建配置。
 
 使用 `with_purego` 标记。
 
-官方发布版本已包含 `libcronet.dll`。自行构建时，从 [cronet-go releases](https://github.com/sagernet/cronet-go/releases) 下载并放置在 `sing-box.exe` 相同目录或 `PATH` 中的任意目录。
+官方发布版本已包含 `libcronet.dll`。自行构建时，从 [cronet-go releases](https://github.com/sagernet/cronet-go/releases) 下载并放置在 `rostra.exe` 相同目录或 `PATH` 中的任意目录。
 
 ### Linux (purego, 仅 amd64/arm64)
 
 使用 `with_purego` 标记。
 
-官方发布版本已包含 `libcronet.so`。自行构建时，从 [cronet-go releases](https://github.com/sagernet/cronet-go/releases) 下载并放置在 sing-box 二进制文件相同目录或系统库路径中。
+官方发布版本已包含 `libcronet.so`。自行构建时，从 [cronet-go releases](https://github.com/sagernet/cronet-go/releases) 下载并放置在 rostra 二进制文件相同目录或系统库路径中。
 
 ### Linux (CGO)
 

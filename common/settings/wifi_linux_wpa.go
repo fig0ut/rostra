@@ -13,7 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
 )
 
 var wpaSocketCounter atomic.Uint64
@@ -39,7 +39,7 @@ func newWpaSupplicantMonitor(callback func(adapter.WIFIState)) (WIFIMonitor, err
 			}
 			socketPath := filepath.Join(socketDir, entry.Name())
 			id := wpaSocketCounter.Add(1)
-			localAddr := &net.UnixAddr{Name: fmt.Sprintf("@sing-box-wpa-%d-%d", os.Getpid(), id), Net: "unixgram"}
+			localAddr := &net.UnixAddr{Name: fmt.Sprintf("@rostra-wpa-%d-%d", os.Getpid(), id), Net: "unixgram"}
 			remoteAddr := &net.UnixAddr{Name: socketPath, Net: "unixgram"}
 			conn, err := net.DialUnix("unixgram", localAddr, remoteAddr)
 			if err != nil {
@@ -54,7 +54,7 @@ func newWpaSupplicantMonitor(callback func(adapter.WIFIState)) (WIFIMonitor, err
 
 func (m *wpaSupplicantMonitor) ReadWIFIState(ctx context.Context) adapter.WIFIState {
 	id := wpaSocketCounter.Add(1)
-	localAddr := &net.UnixAddr{Name: fmt.Sprintf("@sing-box-wpa-%d-%d", os.Getpid(), id), Net: "unixgram"}
+	localAddr := &net.UnixAddr{Name: fmt.Sprintf("@rostra-wpa-%d-%d", os.Getpid(), id), Net: "unixgram"}
 	remoteAddr := &net.UnixAddr{Name: m.socketPath, Net: "unixgram"}
 	conn, err := net.DialUnix("unixgram", localAddr, remoteAddr)
 	if err != nil {
@@ -145,7 +145,7 @@ func (m *wpaSupplicantMonitor) monitorEvents(ctx context.Context, lastState adap
 	var debounceTimer *time.Timer
 	var debounceMutex sync.Mutex
 
-	localAddr := &net.UnixAddr{Name: fmt.Sprintf("@sing-box-wpa-mon-%d", os.Getpid()), Net: "unixgram"}
+	localAddr := &net.UnixAddr{Name: fmt.Sprintf("@rostra-wpa-mon-%d", os.Getpid()), Net: "unixgram"}
 	remoteAddr := &net.UnixAddr{Name: m.socketPath, Net: "unixgram"}
 	conn, err := net.DialUnix("unixgram", localAddr, remoteAddr)
 	if err != nil {

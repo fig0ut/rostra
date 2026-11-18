@@ -5,7 +5,8 @@ package main
 import (
 	"context"
 
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
+
 	"github.com/sagernet/sing/service"
 	"github.com/sagernet/sing/service/filemanager"
 )

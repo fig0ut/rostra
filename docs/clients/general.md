@@ -2,6 +2,8 @@
 icon: material/pencil-ruler
 ---
 
+> This page describes upstream sing-box projects and services, not Rostra releases or endorsements.
+
 # General
 
 Describes and explains the functions implemented uniformly by sing-box graphical clients.

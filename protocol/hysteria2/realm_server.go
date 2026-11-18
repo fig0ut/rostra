@@ -15,7 +15,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sagernet/sing-box/log"
+	"github.com/fig0ut/rostra/log"
+
 	E "github.com/sagernet/sing/common/exceptions"
 
 	"github.com/go-chi/chi/v5"

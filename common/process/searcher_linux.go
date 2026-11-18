@@ -14,9 +14,10 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/sagernet/sing-box/adapter"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/log"
+	"github.com/fig0ut/rostra/adapter"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/log"
+
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing/common"
 	E "github.com/sagernet/sing/common/exceptions"

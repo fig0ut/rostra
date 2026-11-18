@@ -11,7 +11,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/sagernet/sing-box/adapter"
+	"github.com/fig0ut/rostra/adapter"
+
 	N "github.com/sagernet/sing/common/network"
 
 	"golang.org/x/sys/unix"
@@ -278,7 +279,8 @@ func getExecPathFromPID(pid uint32) (string, error) {
 		procpidpathinfo,
 		0,
 		uintptr(unsafe.Pointer(&buf[0])),
-		procpidpathinfosize)
+		procpidpathinfosize,
+	)
 	if errno != 0 {
 		return "", errno
 	}

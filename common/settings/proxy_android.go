@@ -5,7 +5,8 @@ import (
 	"os"
 	"strings"
 
-	C "github.com/sagernet/sing-box/constant"
+	C "github.com/fig0ut/rostra/constant"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	F "github.com/sagernet/sing/common/format"
 	M "github.com/sagernet/sing/common/metadata"

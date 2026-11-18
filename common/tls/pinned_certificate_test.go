@@ -9,8 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/sing/common/json/badoption"
 	"github.com/sagernet/sing/common/logger"
 

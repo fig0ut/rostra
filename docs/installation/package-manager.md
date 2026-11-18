@@ -2,6 +2,8 @@
 icon: material/package
 ---
 
+> These instructions install upstream sing-box, not Rostra. Rostra currently has no package repository. To install Rostra, see [Build from source](build-from-source.md).
+
 # Package Manager
 
 ## :material-tram: Repository Installation

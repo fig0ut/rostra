@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://sing-box.sagernet.org/schema.json",
+  "$id": "https://github.com/fig0ut/rostra/raw/HEAD/docs/schema.json",
   "type": "object",
   "properties": {
     "$schema": {
       "type": "string",
       "examples": [
-        "https://sing-box.sagernet.org/schema.json"
+        "https://github.com/fig0ut/rostra/raw/HEAD/docs/schema.json"
       ]
     },
     "log": {

@@ -15,11 +15,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/sagernet/sing-box/common/badhttp"
-	"github.com/sagernet/sing-box/common/httpclient"
-	"github.com/sagernet/sing-box/common/tls"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/common/badhttp"
+	"github.com/fig0ut/rostra/common/httpclient"
+	"github.com/fig0ut/rostra/common/tls"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/option"
+
 	"github.com/sagernet/sing/common/buf"
 	"github.com/sagernet/sing/common/bufio"
 	"github.com/sagernet/sing/common/bufio/deadline"

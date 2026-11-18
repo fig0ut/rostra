@@ -5,7 +5,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/sagernet/sing-box/experimental/locale"
+	"github.com/fig0ut/rostra/experimental/locale"
+
 	"github.com/sagernet/sing/common/json"
 	"github.com/sagernet/tailscale/atomicfile"
 )

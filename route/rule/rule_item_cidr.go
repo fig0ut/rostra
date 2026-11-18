@@ -5,8 +5,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/common/ipset"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/common/ipset"
+
 	"github.com/sagernet/sing/common"
 	"github.com/sagernet/sing/common/json/badoption"
 

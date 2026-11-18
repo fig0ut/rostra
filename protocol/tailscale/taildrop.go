@@ -25,8 +25,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/experimental/locale"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/experimental/locale"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"
 	"github.com/sagernet/sing/service/filemanager"

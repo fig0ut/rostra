@@ -4,20 +4,17 @@ icon: material/file-code
 
 # Build from source
 
-## :material-graph: Requirements
+## Requirements
 
-### sing-box 1.11
+Use a Go toolchain satisfying `go.mod` (currently Go 1.25.5 or newer).
+Release workflows specify their own toolchain versions.
 
-* Go 1.23.1 - ~
+Clone this fork before building:
 
-### sing-box 1.10
-
-* Go 1.20.0 - ~
-
-### sing-box 1.9
-
-* Go 1.18.5 - 1.22.x
-* Go 1.20.0 - 1.22.x with tag `with_quic`, or `with_utls` enabled
+```bash
+git clone https://github.com/fig0ut/rostra.git
+cd rostra
+```
 
 ## :material-fast-forward: Simple Build
 
@@ -40,7 +37,7 @@ TAGS="tag_a tag_b" make
 or
 
 ```bash
-go build -tags "tag_a tag_b" ./cmd/sing-box
+go build -tags "tag_a tag_b" ./cmd/rostra
 ```
 
 ## :material-folder-settings: Build Tags
@@ -105,13 +102,13 @@ NaiveProxy outbound requires special build configurations depending on your targ
 
 Use `with_purego` tag.
 
-For official releases, `libcronet.dll` is included in the archive. For self-built binaries, download from [cronet-go releases](https://github.com/sagernet/cronet-go/releases) and place in the same directory as `sing-box.exe` or in a directory listed in `PATH`.
+For official releases, `libcronet.dll` is included in the archive. For self-built binaries, download from [cronet-go releases](https://github.com/sagernet/cronet-go/releases) and place in the same directory as `rostra.exe` or in a directory listed in `PATH`.
 
 ### Linux (purego, amd64/arm64 only)
 
 Use `with_purego` tag.
 
-For official releases, `libcronet.so` is included in the archive. For self-built binaries, download from [cronet-go releases](https://github.com/sagernet/cronet-go/releases) and place in the same directory as sing-box binary or in system library path.
+For official releases, `libcronet.so` is included in the archive. For self-built binaries, download from [cronet-go releases](https://github.com/sagernet/cronet-go/releases) and place in the same directory as rostra binary or in system library path.
 
 ### Linux (CGO)
 

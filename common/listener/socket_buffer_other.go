@@ -3,7 +3,7 @@
 package listener
 
 import (
-	C "github.com/sagernet/sing-box/constant"
+	C "github.com/fig0ut/rostra/constant"
 )
 
 func UDPSocketBufferSize() int {

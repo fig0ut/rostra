@@ -1,15 +1,15 @@
-NAME = sing-box
+NAME = rostra
 COMMIT = $(shell git rev-parse --short HEAD)
 TAGS ?= $(shell cat release/DEFAULT_BUILD_TAGS_OTHERS)
 
 GOHOSTOS = $(shell go env GOHOSTOS)
 GOHOSTARCH = $(shell go env GOHOSTARCH)
-VERSION=$(shell CGO_ENABLED=0 GOOS=$(GOHOSTOS) GOARCH=$(GOHOSTARCH) go run github.com/sagernet/sing-box/cmd/internal/read_tag@latest)
+VERSION=$(shell CGO_ENABLED=0 GOOS=$(GOHOSTOS) GOARCH=$(GOHOSTARCH) go run ./cmd/internal/read_tag)
 
 LDFLAGS_SHARED = $(shell cat release/LDFLAGS)
-PARAMS = -v -trimpath -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=$(VERSION)' $(LDFLAGS_SHARED) -s -w -buildid="
+PARAMS = -v -trimpath -ldflags "-X 'github.com/fig0ut/rostra/constant.Version=$(VERSION)' $(LDFLAGS_SHARED) -s -w -buildid="
 MAIN_PARAMS = $(PARAMS) -tags "$(TAGS)"
-MAIN = ./cmd/sing-box
+MAIN = ./cmd/rostra
 PREFIX ?= $(shell go env GOPATH)
 SING_FFI ?= sing-ffi
 LIBBOX_FFI_CONFIG ?= ./experimental/libbox/ffi.json
@@ -30,7 +30,7 @@ ci_build:
 	go build $(MAIN_PARAMS) $(MAIN)
 
 generate_completions:
-	go run -v --tags "$(TAGS),generate,generate_completions" $(MAIN)
+	go run -v -ldflags "$(LDFLAGS_SHARED)" --tags "$(TAGS),generate_completions" $(MAIN)
 
 schema:
 	go run -ldflags "$(LDFLAGS_SHARED)" --tags "$(TAGS)" $(MAIN) schema -o docs/schema.json
@@ -284,8 +284,8 @@ docs_install:
 	source ./venv/bin/activate && pip install --force-reinstall mkdocs-material=="9.7.2" mkdocs-static-i18n=="1.2.*"
 
 clean:
-	rm -rf bin dist sing-box
-	rm -f $(shell go env GOPATH)/sing-box
+	rm -rf bin dist rostra
+	rm -f $(shell go env GOPATH)/rostra
 
 update:
 	git fetch

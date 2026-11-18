@@ -470,7 +470,7 @@ const file_experimental_v2rayapi_stats_proto_rawDesc = "" +
 	"\bGetStats\x12&.experimental.v2rayapi.GetStatsRequest\x1a'.experimental.v2rayapi.GetStatsResponse\"\x00\x12c\n" +
 	"\n" +
 	"QueryStats\x12(.experimental.v2rayapi.QueryStatsRequest\x1a).experimental.v2rayapi.QueryStatsResponse\"\x00\x12`\n" +
-	"\vGetSysStats\x12&.experimental.v2rayapi.SysStatsRequest\x1a'.experimental.v2rayapi.SysStatsResponse\"\x00B4Z2github.com/sagernet/sing-box/experimental/v2rayapib\x06proto3"
+	"\vGetSysStats\x12&.experimental.v2rayapi.SysStatsRequest\x1a'.experimental.v2rayapi.SysStatsResponse\"\x00B0Z.github.com/fig0ut/rostra/experimental/v2rayapib\x06proto3"
 
 var (
 	file_experimental_v2rayapi_stats_proto_rawDescOnce sync.Once
@@ -496,7 +496,6 @@ var (
 		(*SysStatsResponse)(nil),   // 6: experimental.v2rayapi.SysStatsResponse
 	}
 )
-
 var file_experimental_v2rayapi_stats_proto_depIdxs = []int32{
 	1, // 0: experimental.v2rayapi.GetStatsResponse.stat:type_name -> experimental.v2rayapi.Stat
 	1, // 1: experimental.v2rayapi.QueryStatsResponse.stat:type_name -> experimental.v2rayapi.Stat

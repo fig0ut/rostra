@@ -12,7 +12,8 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/sagernet/sing-box/common/badversion"
+	"github.com/fig0ut/rostra/common/badversion"
+
 	"github.com/sagernet/sing/common/control"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/shell"

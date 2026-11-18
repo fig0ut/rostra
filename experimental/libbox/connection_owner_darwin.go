@@ -5,7 +5,8 @@ import (
 	"os/user"
 	"syscall"
 
-	"github.com/sagernet/sing-box/common/process"
+	"github.com/fig0ut/rostra/common/process"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	F "github.com/sagernet/sing/common/format"
 )

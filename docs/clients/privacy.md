@@ -2,6 +2,8 @@
 icon: material/security
 ---
 
+> This page describes upstream sing-box projects and services, not Rostra releases or endorsements.
+
 # Privacy policy
 
 sing-box and official graphics clients do not collect or share personal data,

@@ -9,7 +9,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/sagernet/sing-box/route"
+	"github.com/fig0ut/rostra/route"
 
 	"github.com/mdlayher/netlink"
 	"golang.org/x/sys/unix"

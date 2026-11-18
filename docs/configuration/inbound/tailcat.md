@@ -36,7 +36,7 @@ icon: material/new-box
 
 Private key.
 
-Generate with `sing-box generate tailcat-keypair`.
+Generate with `rostra generate tailcat-keypair`.
 
 #### pre_shared_key
 

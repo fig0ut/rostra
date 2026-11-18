@@ -5,16 +5,17 @@ package include
 import (
 	"context"
 
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/adapter/certificate"
-	"github.com/sagernet/sing-box/adapter/endpoint"
-	"github.com/sagernet/sing-box/adapter/inbound"
-	"github.com/sagernet/sing-box/adapter/outbound"
-	"github.com/sagernet/sing-box/adapter/service"
-	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/dns"
-	"github.com/sagernet/sing-box/log"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/adapter/certificate"
+	"github.com/fig0ut/rostra/adapter/endpoint"
+	"github.com/fig0ut/rostra/adapter/inbound"
+	"github.com/fig0ut/rostra/adapter/outbound"
+	"github.com/fig0ut/rostra/adapter/service"
+	C "github.com/fig0ut/rostra/constant"
+	"github.com/fig0ut/rostra/dns"
+	"github.com/fig0ut/rostra/log"
+	"github.com/fig0ut/rostra/option"
+
 	E "github.com/sagernet/sing/common/exceptions"
 )
 

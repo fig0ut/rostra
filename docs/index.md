@@ -1,12 +1,14 @@
 ---
-description: Welcome to the wiki page for the sing-box project.
+description: Welcome to the Rostra documentation.
 ---
 
 # :material-home: Home
 
-Welcome to the wiki page for the sing-box project.
+Welcome to the Rostra documentation.
 
-The universal proxy platform.
+Rostra is an independently maintained fork of sing-box, unaffiliated with and not endorsed by SagerNet.
+
+See [Migration to Rostra](rostra-migration.md). Historical release notes and version references describe upstream sing-box.
 
 ## License
 

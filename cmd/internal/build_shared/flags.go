@@ -4,7 +4,7 @@ import "strings"
 
 func LinkerFlags(version string, debug bool) string {
 	flags := []string{
-		"-X github.com/sagernet/sing-box/constant.Version=" + version,
+		"-X github.com/fig0ut/rostra/constant.Version=" + version,
 		"-X runtime.godebugDefault=multipathtcp=0,tlssha1=1",
 		"-checklinkname=0",
 	}

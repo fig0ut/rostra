@@ -3,8 +3,9 @@
 package netns
 
 import (
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/option"
+	"github.com/fig0ut/rostra/adapter"
+	"github.com/fig0ut/rostra/option"
+
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"
 )
