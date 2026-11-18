@@ -5,6 +5,7 @@
   "type": "urltest",
   "tag": "auto",
   
+  "outbound_set": [],
   "outbounds": [
     "proxy-a",
     "proxy-b",
@@ -20,9 +21,15 @@
 
 ### 字段
 
+#### outbound_set
+
+用于测试的[出站集合](/zh/configuration/outbound-set/)标签列表，也接受单个标签。
+
+成员按集合和源文件顺序追加到 `outbounds` 后。重复的成员标签只添加一次。
+
 #### outbounds
 
-==必填==
+==当 `outbound_set` 为空时必填==
 
 用于测试的出站标签列表。
 

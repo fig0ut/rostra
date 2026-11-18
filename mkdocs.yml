@@ -116,6 +116,9 @@ nav:
           - Route Rule: configuration/route/rule.md
           - Rule Action: configuration/route/rule_action.md
           - Protocol Sniff: configuration/route/sniff.md
+      - Outbound Set:
+          - configuration/outbound-set/index.md
+          - Source Format: configuration/outbound-set/source-format.md
       - Rule Set:
           - configuration/rule-set/index.md
           - Source Format: configuration/rule-set/source-format.md
@@ -301,6 +304,7 @@ plugins:
             Rule Action: 规则动作
             Protocol Sniff: 协议探测
 
+            Outbound Set: 出站集合
             Rule Set: 规则集
             Source Format: 源文件格式
             Headless Rule: 无头规则

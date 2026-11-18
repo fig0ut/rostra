@@ -5,6 +5,7 @@
   "type": "urltest",
   "tag": "auto",
   
+  "outbound_set": [],
   "outbounds": [
     "proxy-a",
     "proxy-b",
@@ -20,9 +21,15 @@
 
 ### Fields
 
+#### outbound_set
+
+List of [outbound-set](/configuration/outbound-set/) tags to test. Also accepts a single tag.
+
+Members are appended after `outbounds`, in set and source order. Repeated member tags are included only once.
+
 #### outbounds
 
-==Required==
+==Required if `outbound_set` is empty==
 
 List of outbound tags to test.
 
