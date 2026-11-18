@@ -142,6 +142,7 @@ nav:
           - Pre-match: configuration/shared/pre-match.md
           - Multiplex: configuration/shared/multiplex.md
           - V2Ray Transport: configuration/shared/v2ray-transport.md
+          - XHTTP: configuration/shared/xhttp.md
           - UDP over TCP: configuration/shared/udp-over-tcp.md
           - UDP NAT Fields: configuration/shared/udp-nat.md
           - TCP Brutal: configuration/shared/tcp-brutal.md

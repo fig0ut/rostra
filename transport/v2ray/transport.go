@@ -10,6 +10,7 @@ import (
 	"github.com/sagernet/sing-box/transport/v2rayhttp"
 	"github.com/sagernet/sing-box/transport/v2rayhttpupgrade"
 	"github.com/sagernet/sing-box/transport/v2raywebsocket"
+	"github.com/sagernet/sing-box/transport/v2rayxhttp"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"
 	M "github.com/sagernet/sing/common/metadata"
@@ -26,6 +27,8 @@ func NewServerTransport(ctx context.Context, logger logger.ContextLogger, option
 		return nil, nil
 	}
 	switch options.Type {
+	case C.V2RayTransportTypeXHTTP, C.V2RayTransportTypeSplitHTTP:
+		return v2rayxhttp.NewServer(ctx, logger, options.XHTTPOptions, tlsConfig, handler)
 	case C.V2RayTransportTypeHTTP:
 		return v2rayhttp.NewServer(ctx, logger, options.HTTPOptions, tlsConfig, handler)
 	case C.V2RayTransportTypeWebsocket:
@@ -49,6 +52,8 @@ func NewClientTransport(ctx context.Context, dialer N.Dialer, serverAddr M.Socks
 		return nil, nil
 	}
 	switch options.Type {
+	case C.V2RayTransportTypeXHTTP, C.V2RayTransportTypeSplitHTTP:
+		return v2rayxhttp.NewClient(ctx, dialer, serverAddr, options.XHTTPOptions, tlsConfig)
 	case C.V2RayTransportTypeHTTP:
 		return v2rayhttp.NewClient(ctx, dialer, serverAddr, options.HTTPOptions, tlsConfig)
 	case C.V2RayTransportTypeGRPC:
